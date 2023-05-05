@@ -9,7 +9,10 @@
 # ------------------------------------------------------------------------------
 # This script accompanies the publication:
 
-# Please cite: ...
+# Please cite: Koska, D., Oriwol, D., Maiwald, C. (2023) Comparison of
+# statistical models for characterizing continuous differences between two bio-
+# mechanical measurement systems. Journal of Biomechanics.
+# DOI: https://doi.org/10.1016/j.jbiomech.2023.111506
 #
 #
 # Values of 4 variables should be set/initialized before running the script:
