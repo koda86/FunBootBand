@@ -14,6 +14,7 @@
 # mechanical measurement systems. Journal of Biomechanics.
 # DOI: https://doi.org/10.1016/j.jbiomech.2023.111506
 #
+#
 # Values of 4 variables should be set/initialized before running the script:
 # 1. The data and script directories ('dir.data', 'dir.script')
 # 2. The example data set (in example_data())
