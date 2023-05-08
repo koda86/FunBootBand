@@ -12,4 +12,12 @@
 #' @keywords dataset
 #' @examples
 #' data(curvesample)
-#' plot
+#' plot(NULL,
+#' xlim = c(0, 101),
+#' ylim = range(data.sub$value),
+#' xlab = "Frame",
+#' ylab = "Value")
+#'
+#' for (i in 1:110) {
+#'   lines(data.sub$value[data.sub$strideID == i], col = i)
+#' }
