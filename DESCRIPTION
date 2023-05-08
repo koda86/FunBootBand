@@ -1,11 +1,12 @@
 Package: FunPredBand
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Creates Functional Bootstraped (statistical) Bands
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Author: Daniel Koska
+Maintainer: Daniel Koska <daniel.koska@hsw.tu-chemnitz.de>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: GPL-2 (LGPL)
 Encoding: UTF-8
 LazyData: true
+Data: data/imu_mc.csv
