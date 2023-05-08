@@ -7,6 +7,7 @@
 # R version: 4.0.5
 # Platform: x86_64-pc-linux-gnu
 # ------------------------------------------------------------------------------
+#test
 # This script accompanies the publication:
 
 # Please cite: Koska, D., Oriwol, D., Maiwald, C. (2023) Comparison of
