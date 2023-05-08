@@ -1,7 +1,20 @@
-# ******************************************************************************
-# *****************    Main script prediction bands    *************************
-# ******************************************************************************
-#
+#' @title FunBootBand
+#'
+#' @description Creates Functional Bootstraped (statistical) Bands
+#'
+#' @param data Data set
+#' @param type Band type (type = c("confidence", "prediction", "tolerance"))
+#' @param B Number of bootstrap iterations (e.g., B = 1000)
+#' @param iid Assume independent and identically distributed (iid) curves or not
+#' (iid = c(TRUE, FALSE))
+#'
+#' @return A data frame object that contains upper and lower band boundaries
+#' @examples
+#' data(imu_mc)
+#' band.limits <- band(data = imu_mc, type = "prediction", B = 1000, iid = TRUE)
+#' @export
+#' @importFrom dplyr "%>%"
+
 # R version: 4.0.5
 # Platform: x86_64-pc-linux-gnu
 # ------------------------------------------------------------------------------
@@ -11,13 +24,6 @@
 # statistical models for characterizing continuous differences between two bio-
 # mechanical measurement systems. Journal of Biomechanics.
 # DOI: https://doi.org/10.1016/j.jbiomech.2023.111506
-#
-# Values of 4 variables should be set/initialized before running the script:
-# 1. The data and script directories ('dir.data', 'dir.script')
-# 2. The example data set (in example_data())
-# 3. The number of bootstrap iterations (n.boot)
-# 4. The number of repeated calculations for the uncertainty estimation (n.rep)
-#
 #
 # IMPORTANT: Currently, the script is designed for balanced data sets.
 # Unbalanced designs (unequal number of observations) may lead to errors!
