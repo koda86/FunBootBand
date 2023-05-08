@@ -17,9 +17,7 @@
 
 # R version: 4.0.5
 # Platform: x86_64-pc-linux-gnu
-# ------------------------------------------------------------------------------
-# This script accompanies the publication:
-
+#
 # IMPORTANT: Currently, the script is designed for balanced data sets.
 # Unbalanced designs (unequal number of observations) may lead to errors!
 # ******************************************************************************
