@@ -117,8 +117,8 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
   }
 
   # Construct prediction or confidence bands -----------------------------------
-  floa.boot.mean <- rowMeans(bootstrap.real_mw)
-  floa.boot.sd   <- rowMeans(bootstrap.std)
+  band.mean <- rowMeans(bootstrap.real_mw)
+  band.sd   <- rowMeans(bootstrap.std)
 
   if (type == "prediction") {
     cp.data   <- matlab::zeros(n.curves, B)
@@ -140,9 +140,9 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
     }
     cp_out <- cp.bound
 
-    floa.boot <- rbind(floa.boot.mean + cp.bound * floa.boot.sd,
-                       floa.boot.mean,
-                       floa.boot.mean - cp.bound * floa.boot.sd
+    band.boot <- rbind(band.mean + cp.bound * band.sd,
+                       band.mean,
+                       band.mean - cp.bound * band.sd
     )
   } else if (type == "confidence") {
     # cc.data <- matlab::zeros(n.curves, B)
@@ -155,15 +155,15 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
     }
     cc <- quantile(cc.data, probs = 1-alpha)
 
-    floa.boot <- rbind(floa.boot.mean + cc * floa.boot.sd,
-                       floa.boot.mean,
-                       floa.boot.mean - cc * floa.boot.sd
+    band.boot <- rbind(band.mean + cc * band.sd,
+                       band.mean,
+                       band.mean - cc * band.sd
     )
   }
 
-  row.names(floa.boot) <- c("upper.loa", "mean", "lower.loa")
+  row.names(band.boot) <- c("upper", "mean", "lower")
 
-  return(floa.boot)
+  return(band.boot)
 }
 
 
