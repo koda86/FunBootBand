@@ -1,4 +1,4 @@
-Package: FunPredBand
+Package: FunBootBand
 Type: Package
 Title: Creates Functional Bootstraped (statistical) Bands
 Version: 0.1.0
@@ -9,4 +9,4 @@ Description: More about what it does (maybe more than one line)
 License: GPL-2 (LGPL)
 Encoding: UTF-8
 LazyData: true
-Data: data/imu_mc.csv
+Data: data/curvesample.RData
