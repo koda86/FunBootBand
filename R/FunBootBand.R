@@ -37,7 +37,7 @@
 #   }
 # )
 
-data <- get(load("curvesample.RData"))
+data <- get(load("~/FunBootBand/data/curvesample.RData"))
 
 # floa.boot.rep  <- floa_boot_rep(data,
 #                                 k.coef = 50,
@@ -54,16 +54,20 @@ data <- get(load("curvesample.RData"))
 #                             iid = TRUE) # Draw only a single curve per subject
 
 # Actual function
-band <- function(data, k.coef = 50, B = 50, type = "prediction", cp.begin = 0,
+band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
                  alpha = 0.05, iid = TRUE) {
   # ****************************************************************************
   # In this script, functional prediction bands are calculated by adapting the
   # method described in Lenhoff et al. (1999).
   # ****************************************************************************
-  # Dimensions
-  n.time    <- dim(data)[1] # unique(data$frame)
-  n.curves  <- dim(data)[2] # unique(data$strideID)
+  # Get dimensions
+  n.time    <- length(unique(data$frame))
+  n.curves  <- length(unique(data$strideID))
   time      <- seq(0, (n.time-1))
+
+  # Get numeric values into wide data format
+  data.num.long <- data$value
+  data.num.wide <- matrix(data.num.long, ncol = length(data.num.long) / n.time)
 
   # ----------------------------------------------------------------------------
   # Approximate time series (differences) using Fourier functions
@@ -81,13 +85,13 @@ band <- function(data, k.coef = 50, B = 50, type = "prediction", cp.begin = 0,
   # General: f(t) = mu + sum(alpha cos(2pi*k*t/T) + beta sin(2pi*k*t/T))
   fourier.s = rep(1, times = n.time)
   for (k in seq(1, k.coef*2, 2)) {
-    fourier.s <- cbind(fourier.s, cos(2*pi*(k/2)*time/(n.time-1)))
-    fourier.s <- cbind(fourier.s, sin(2*pi*(k/2)*time/(n.time-1)))
+    fourier.s <- cbind(fourier.s, cos(2*pi*(k/2)*time / (n.time-1)))
+    fourier.s <- cbind(fourier.s, sin(2*pi*(k/2)*time / (n.time-1)))
   }
 
   for (i in 1:n.curves) {
     # Least squares Regression
-    fourier.koeffi[, i] = pracma::mldivide(fourier.s, data[, i])
+    fourier.koeffi[, i] = pracma::mldivide(fourier.s, data.num.wide[, i])
     # Fourier curve
     fourier.real[, i] = fourier.s %*% fourier.koeffi[, i]
   }
@@ -99,18 +103,20 @@ band <- function(data, k.coef = 50, B = 50, type = "prediction", cp.begin = 0,
   # Standard deviation of the Fourier curve
   for (i in 1:n.curves) {
     # variance-covariance matrix
-    fourier.std1[, , i] <- (fourier.koeffi[, i] - fourier.mean[, 1]) %*% t(fourier.koeffi[, i] - fourier.mean[, 1])
+    fourier.std1[, , i] <- (fourier.koeffi[, i] - fourier.mean[, 1]) %*%
+                           t(fourier.koeffi[, i] - fourier.mean[, 1])
   }
 
   fourier.kovarianz <- apply(fourier.std1, c(1, 2), mean)
   # Lenhoff, Appendix A, Eq. (0.5)
-  fourier.std_all <- suppressWarnings(sqrt(fourier.s %*% fourier.kovarianz %*% t(fourier.s)))
+  fourier.std_all <- suppressWarnings(sqrt(fourier.s %*% fourier.kovarianz %*%
+                     t(fourier.s))
+                     )
 
   for (i in 1:n.time) {
     # Values are on the diagonal of the square matrix fourier.std_all
     fourier.std[i, 1] = fourier.std_all[i, i]
   }
-
 
   # ----------------------------------------------------------------------------
   # Bootstrap
@@ -138,36 +144,20 @@ band <- function(data, k.coef = 50, B = 50, type = "prediction", cp.begin = 0,
     bootstrap.real_mw[, i] <- fourier.s %*% bootstrap.mean[, i]
 
     for (k in 1:n.curves) {
-      bootstrap.std1[, , k] <- (bootstrap.pseudo_koeffi[, k, i] - bootstrap.mean[, i]) %*% t(bootstrap.pseudo_koeffi[, k, i] - bootstrap.mean[, i])
+      bootstrap.std1[, , k] <- (bootstrap.pseudo_koeffi[, k, i] -
+                                  bootstrap.mean[, i]) %*%
+                        t(bootstrap.pseudo_koeffi[, k, i] - bootstrap.mean[, i])
     }
 
     bootstrap.kovarianz[, , i] <- apply(bootstrap.std1, c(1, 2), mean)
-    bootstrap.std_all[, , i] <- suppressWarnings(sqrt(fourier.s %*% bootstrap.kovarianz[, , i] %*% t(fourier.s)))
+    bootstrap.std_all[, , i] <- suppressWarnings(sqrt(fourier.s %*%
+                                bootstrap.kovarianz[, , i] %*% t(fourier.s))
+                                )
 
     for (k in 1:n.time) {
       bootstrap.std[k, i] <- bootstrap.std_all[k, k, i]
     }
-
-    # Dummy plots (Appendix) (which curves are drawn per bootstrap iteration?)
-    # condition <- ifelse(iid == TRUE, "iid", "rep")
-    # filename.dummy <- paste0("~/Nextcloud/project-fab-forschung/Publikationen/FLOA/paper_JournalBiomechanics/Review/dummy_plots/",
-    #                          condition,
-    #                          i, # bootstrap iteration
-    #                          ".png")
-    # png(filename.dummy)
-    # plot(bootstrap.real[, 1, 1],
-    #      type = "l",
-    #      ylim = c(-2, 2),
-    #      main = paste0("BOOTiid (iteration ", i, "), SD at 87%: ", round(bootstrap.std[, i][87], 2)),
-    #      xlab = "Time-normalized signal [%]",
-    #      ylab = "Difference")
-    # for (ii in 1:dim(bootstrap.real)[2]) {
-    #   lines(bootstrap.real[, ii, i])
-    # }
-    # dev.off()
   }
-
-
 
   # ----------------------------------------------------------------------------
   # Construct prediction or confidence bands
@@ -185,7 +175,8 @@ band <- function(data, k.coef = 50, B = 50, type = "prediction", cp.begin = 0,
       for (i in 1:B) {
         for (k in 1:n.curves) {
           # Lenhoff et al., Appendix A, Eq. (0.6)
-          cp.data[k, i] <- max(abs(fourier.real[, k] - bootstrap.real_mw[, i]) / bootstrap.std[, i])
+          cp.data[k, i] <- max(abs(fourier.real[, k] - bootstrap.real_mw[, i]) /
+                                 bootstrap.std[, i])
           cp.data_i[k, i] <- cp.data[k, i] < cp.bound
         }
       }
@@ -200,13 +191,13 @@ band <- function(data, k.coef = 50, B = 50, type = "prediction", cp.begin = 0,
                        floa.boot.mean,
                        floa.boot.mean - cp.bound * floa.boot.sd
     )
-  } else { # confidence bands
+  } else if (type == "confidence") {
     # cc.data <- matlab::zeros(n.curves, B)
-
     for (i in 1:B) {
       for (k in 1:n.curves) {
         # Lenhoff, Appendix A, Eq. (0.6)
-        cc.data[k, i] <- max(abs(fourier.real_mw[, k] - bootstrap.real_mw[, i]) / bootstrap.std[, i])
+        cc.data[k, i] <- max(abs(fourier.real_mw[, k] - bootstrap.real_mw[, i])/
+                               bootstrap.std[, i])
       }
     }
     cc <- quantile(cc.data, probs = 1-alpha)
@@ -221,4 +212,7 @@ band <- function(data, k.coef = 50, B = 50, type = "prediction", cp.begin = 0,
 
   return(floa.boot)
 }
+
+# band(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0, alpha = 0.05, iid = TRUE)
+
 
