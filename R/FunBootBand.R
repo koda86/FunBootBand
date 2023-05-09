@@ -1,6 +1,8 @@
 #' @title FunBootBand
 #'
-#' @description Creates Functional Bootstraped (statistical) Bands
+#' @description Creates Functional Bootstraped (statistical) Bands. IMPORTANT
+#' NOTE: Currently, the script is designed for balanced data sets. Unbalanced
+#' designs (unequal number of curves) may lead to errors!
 #'
 #' @param data Data set
 #' @param type Band type (type = c("confidence", "prediction", "tolerance"))
@@ -16,62 +18,19 @@
 #' @export
 #' @import tidyverse, reshape2, matlab
 
-# ******************************************************************************
-# IMPORTANT: Currently, the script is designed for balanced data sets.
-# Unbalanced designs (unequal number of observations) may lead to errors!
-# ******************************************************************************
-
-# # Load installed packages and install missing packages (automatically)
-# # Packages needed for floa
-# packages = c("tidyverse",
-#              "reshape2",
-#              "matlab")
-#
-# package.setup <- lapply(
-#   packages,
-#   FUN = function(x) {
-#     if (!require(x, character.only = TRUE)) {
-#       install.packages(x, dependencies = TRUE)
-#       library(x, character.only = TRUE)
-#     }
-#   }
-# )
-
 data <- get(load("~/FunBootBand/data/curvesample.RData"))
 
-# floa.boot.rep  <- floa_boot_rep(data,
-#                                 k.coef = 50,
-#                                 B = B,
-#                                 band = "prediction",
-#                                 cp.begin = 0,
-#                                 alpha = 0.05)
-# floa.boot.iid  <- floa_boot(data,
-#                             k.coef = 50,
-#                             B = B,
-#                             band = "prediction",
-#                             cp.begin = 0,
-#                             alpha = 0.05,
-#                             iid = TRUE) # Draw only a single curve per subject
-
-# Actual function
 band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
                  alpha = 0.05, iid = TRUE) {
-  # ****************************************************************************
-  # In this script, functional prediction bands are calculated by adapting the
-  # method described in Lenhoff et al. (1999).
-  # ****************************************************************************
   # Get dimensions
   n.time    <- length(unique(data$frame))
   n.curves  <- length(unique(data$strideID))
   time      <- seq(0, (n.time-1))
-
   # Get numeric values into wide data format
   data.num.long <- data$value
   data.num.wide <- matrix(data.num.long, ncol = length(data.num.long) / n.time)
 
-  # ----------------------------------------------------------------------------
   # Approximate time series (differences) using Fourier functions
-  # ----------------------------------------------------------------------------
   fourier.koeffi    <- matlab::zeros(c(k.coef*2 + 1, n.curves))
   fourier.real      <- matlab::zeros(n.time, n.curves)
   fourier.mean      <- matlab::zeros(k.coef*2 + 1)
@@ -118,9 +77,7 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
     fourier.std[i, 1] = fourier.std_all[i, i]
   }
 
-  # ----------------------------------------------------------------------------
-  # Bootstrap
-  # ----------------------------------------------------------------------------
+  # Bootstrap ------------------------------------------------------------------
   bootstrap_sample        <- matlab::zeros(n.time, 4)
   bootstrap.mean          <- matlab::zeros(k.coef*2 + 1, B)
   bootstrap.real_mw       <- matlab::zeros(n.time, B)
@@ -159,9 +116,7 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
     }
   }
 
-  # ----------------------------------------------------------------------------
-  # Construct prediction or confidence bands
-  # ----------------------------------------------------------------------------
+  # Construct prediction or confidence bands -----------------------------------
   floa.boot.mean <- rowMeans(bootstrap.real_mw)
   floa.boot.sd   <- rowMeans(bootstrap.std)
 
@@ -185,8 +140,6 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
     }
     cp_out <- cp.bound
 
-    # Construct bands
-    # ------------------------------------------------------------------------
     floa.boot <- rbind(floa.boot.mean + cp.bound * floa.boot.sd,
                        floa.boot.mean,
                        floa.boot.mean - cp.bound * floa.boot.sd
@@ -212,7 +165,5 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
 
   return(floa.boot)
 }
-
-# band(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0, alpha = 0.05, iid = TRUE)
 
 
