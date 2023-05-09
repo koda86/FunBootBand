@@ -1,8 +1,8 @@
 #' @title FunBootBand
 #'
-#' @description Creates Functional Bootstraped (statistical) Bands. IMPORTANT
-#' NOTE: Currently, the script is designed for balanced data sets. Unbalanced
-#' designs (unequal number of curves) may lead to errors!
+#' @description Creates Functional Bootstraped (statistical) Bands.
+#' IMPORTANT NOTE: Currently, the script is designed for balanced data sets.
+#' Unbalanced designs (unequal number of curves) may lead to errors!
 #'
 #' @param data Data set
 #' @param type Band type (type = c("confidence", "prediction", "tolerance"))
