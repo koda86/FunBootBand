@@ -4,11 +4,16 @@
 #' IMPORTANT NOTE: Currently, the script is designed for balanced data sets.
 #' Unbalanced designs (unequal number of curves) may lead to errors!
 #'
-#' @param data Data set
-#' @param type Band type (type = c("confidence", "prediction", "tolerance"))
-#' @param B Number of bootstrap iterations (e.g., B = 1000)
+#' @usage band(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0, alpha = 0.05, iid = TRUE)
+#'
+#' @param data A data set consisting of n curves of length t. Needs to be a
+#' numerical matrix of dimensions [t, n], e.g., data[1:101, 1:50] represents 50
+#' curves of length 101 points.
+#' @param type Band type (c("confidence", "prediction", "tolerance")).
+#' @param B Number of bootstrap iterations (e.g., B = 1000).
 #' @param iid Assume independent and identically distributed (iid) curves or not
-#' (iid = c(TRUE, FALSE))
+#' (iid = c(TRUE, FALSE)). Setting iid=TRUE runs an ordinary (naive) bootstrap.
+#' When setting iid=FALSE, a two-stage bootstrap is run, in which ...
 #' @param alpha Type I error probability
 #'
 #' @return A data frame object that contains upper and lower band boundaries
@@ -17,18 +22,14 @@
 #' band.limits <- band(data = curves, type = "prediction", B = 1000, iid = TRUE)
 #' @export
 #' @import tidyverse, reshape2, matlab
-
-data <- get(load("~/FunBootBand/data/curvesample.RData"))
+invisible(get(load("~/FunBootBand/data/curvesample.RData")))
 
 band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
                  alpha = 0.05, iid = TRUE) {
   # Get dimensions
-  n.time    <- length(unique(data$frame))
-  n.curves  <- length(unique(data$strideID))
+  n.time    <- dim(data)[1]
+  n.curves  <- dim(data)[2]
   time      <- seq(0, (n.time-1))
-  # Get numeric values into wide data format
-  data.num.long <- data$value
-  data.num.wide <- matrix(data.num.long, ncol = length(data.num.long) / n.time)
 
   # Approximate time series (differences) using Fourier functions
   fourier.koeffi    <- matlab::zeros(c(k.coef*2 + 1, n.curves))
