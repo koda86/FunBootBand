@@ -14,12 +14,12 @@
 #' @param iid Assume independent and identically distributed (iid) curves or not
 #' (iid = c(TRUE, FALSE)). Setting iid=TRUE runs an ordinary (naive) bootstrap.
 #' When setting iid=FALSE, a two-stage bootstrap is run, where clusters
-#' (comprising all of their elements) are resampled with replacement in the
+#' (comprising all of their curves) are resampled with replacement in the
 #' initial stage, and one curve per cluster is sampled without replacement in
 #' the second stage.
-#' @param alpha Type I error probability
+#' @param alpha Desired type I error probability.
 #'
-#' @return A data frame object that contains upper and lower band boundaries
+#' @return A data frame object that contains upper and lower band boundaries.
 #' @examples
 #' load("curvesample.RData")
 #' band.limits <- band(data = curves, type = "prediction", B = 1000, iid = TRUE)
