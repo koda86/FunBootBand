@@ -10,3 +10,4 @@ License: GPL-2 (LGPL)
 Encoding: UTF-8
 LazyData: true
 Data: data/curvesample.RData
+RoxygenNote: 7.2.3
