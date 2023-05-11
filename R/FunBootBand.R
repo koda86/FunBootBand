@@ -4,7 +4,8 @@
 #' IMPORTANT NOTE: Currently, the script is designed for balanced data sets.
 #' Unbalanced designs (unequal number of curves) may lead to errors!
 #'
-#' @usage band(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0, alpha = 0.05, iid = TRUE)
+#' @usage band(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
+#' alpha = 0.05, iid = TRUE)
 #'
 #' @param data A data set consisting of n curves of length t. Needs to be a
 #' numerical matrix of dimensions [t, n], e.g., data[1:101, 1:50] represents 50
@@ -16,7 +17,9 @@
 #' When setting iid=FALSE, a two-stage bootstrap is run, where clusters
 #' (comprising all of their curves) are resampled with replacement in the
 #' initial stage, and one curve per cluster is sampled without replacement in
-#' the second stage.
+#' the second stage. If iid is set to FALSE, curves are assumed to be nested in
+#' curve clusters. These curve clusters need to be indicated in an additional
+#' header line (see 'Format').
 #' @param alpha Desired type I error probability.
 #'
 #' @return A data frame object that contains upper and lower band boundaries.
@@ -25,16 +28,40 @@
 #' band.limits <- band(data = curves, type = "prediction", B = 1000, iid = TRUE)
 #' @export
 #' @import tidyverse, reshape2, matlab
+#'
+
+# todo:
+# - BOOTrep implementieren
+# - Toleranzbaender
+# - Vignette schreiben
+# - Testen
+
+# The header line needs to consist of letters.
+
 invisible(get(load("~/FunBootBand/data/curvesample.RData")))
 
-band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
+band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
                  alpha = 0.05, iid = TRUE) {
-  # Get dimensions
-  n.time    <- dim(data)[1]
-  n.curves  <- dim(data)[2]
-  time      <- seq(0, (n.time-1))
 
-  # Approximate time series (differences) using Fourier functions
+  if(all(is.na(suppressWarnings(as.numeric(data[1, ]))))) { # If header exists
+    header <- as.character(data[1, ])
+    data <- data[-1, ]
+    n.time <- dim(data)[1]
+    # Reduce object size
+    data <- matrix(as.numeric(data), nrow = n.time)
+  } else {
+    n.time <- dim(data)[1]
+    data <- matrix(as.numeric(data), nrow = n.time)
+  }
+
+  time <- seq(0, (n.time-1))
+  n.curves  <- dim(data)[2]
+  if (iid == FALSE) {
+    n.cluster <- length(unique(header))
+    curves.per.cluster <- n.curves / n.cluster
+  }
+
+  # Approximate curves using Fourier functions ---------------------------------
   fourier.koeffi    <- matlab::zeros(c(k.coef*2 + 1, n.curves))
   fourier.real      <- matlab::zeros(n.time, n.curves)
   fourier.mean      <- matlab::zeros(k.coef*2 + 1)
@@ -54,7 +81,7 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
 
   for (i in 1:n.curves) {
     # Least squares Regression
-    fourier.koeffi[, i] = pracma::mldivide(fourier.s, data.num.wide[, i])
+    fourier.koeffi[, i] = pracma::mldivide(fourier.s, data[, i])
     # Fourier curve
     fourier.real[, i] = fourier.s %*% fourier.koeffi[, i]
   }
@@ -94,10 +121,32 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
   bootstrap.std           <- matlab::zeros(n.time, B)
 
   for (i in 1:B) {
-    for (k in 1:n.curves) {
-      bootstrap.zz[k, i] = sample(n.curves, size=1)
-      bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
-      bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+    if (iid == FALSE) {
+      for (k in 1:curves.per.cluster) {
+        # STAGE 1: Sample curve clusters with replacement
+        stage.1.idx <- sample(1:n.cluster, size = n.cluster, replace = TRUE)
+        # STAGE 2: Sample within stage clusters without replacement
+        curves <- c()
+        for (curve.idx in stage.1.idx) {
+          curve.numbers.stage.1 <- seq(from = curve.idx*curves.per.cluster -
+                                          curves.per.cluster + 1,
+                                        to = curve.idx*curves.per.cluster)
+          tmp <- sample(curve.numbers.stage.1, size = 1, replace = FALSE)
+          while (tmp %in% curves) { # Assure drawing without replacement
+            tmp <- sample(curve.numbers.stage.1, size = 1)
+          }
+          curves <- c(curves, tmp)
+        }
+        bootstrap.zz[k, i] = curves[k]
+        bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
+        bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+    }
+    } else {
+      for (k in 1:n.curves) {
+        bootstrap.zz[k, i] = sample(n.curves, size=1)
+        bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
+        bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+      }
     }
 
     # Mean bootstrap curve and standard deviation
@@ -149,7 +198,6 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
                        band.mean - cp.bound * band.sd
     )
   } else if (type == "confidence") {
-    # cc.data <- matlab::zeros(n.curves, B)
     for (i in 1:B) {
       for (k in 1:n.curves) {
         # Lenhoff, Appendix A, Eq. (0.6)
@@ -169,5 +217,3 @@ band <- function(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
 
   return(band.boot)
 }
-
-
