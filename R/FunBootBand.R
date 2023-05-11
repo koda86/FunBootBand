@@ -27,11 +27,12 @@
 #' load("curvesample.RData")
 #' band.limits <- band(data = curves, type = "prediction", B = 1000, iid = TRUE)
 #' @export
-#' @import matlab
+#' @import matlab, pracma
 #'
 
 # todo:
 # - ggf. 'matlab' Funktionen und alle non-base packages rausnehmen (matlab)
+# ganz konkret: matlab::zeros durch pracma::zeros ersetzen ... bei 3 input-Argumenten schauen!
 # - Funktion in C++ entwickeln
 # - Vignette schreiben
 # - Testen
@@ -63,14 +64,22 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
   }
 
   # Approximate curves using Fourier functions ---------------------------------
-  fourier.koeffi    <- matlab::zeros(c(k.coef*2 + 1, n.curves))
-  fourier.real      <- matlab::zeros(n.time, n.curves)
-  fourier.mean      <- matlab::zeros(k.coef*2 + 1)
-  fourier.real_mw   <- matlab::zeros(n.time, 1)
+  # fourier.koeffi    <- matlab::zeros(c(k.coef*2 + 1, n.curves)) # old version
+  fourier.koeffi    <- pracma::zeros(k.coef*2 + 1, n.curves)
+  # fourier.real      <- matlab::zeros(n.time, n.curves)
+  fourier.real      <- pracma::zeros(n.time, n.curves)
+  # fourier.mean      <- matlab::zeros(k.coef*2 + 1)
+  fourier.mean      <- pracma::zeros(k.coef*2 + 1)
+  # fourier.real_mw   <- matlab::zeros(n.time, 1)
+  fourier.real_mw   <- pracma::zeros(n.time, 1)
   fourier.std1      <- matlab::zeros(k.coef*2 + 1, k.coef*2 + 1, n.curves)
-  fourier.kovarianz <- matlab::zeros(k.coef*2 + 1, k.coef*2 + 1)
-  fourier.std_all   <- matlab::zeros(n.time, n.time)
-  fourier.std       <- matlab::zeros(n.time, 1)
+  # fourier.std1      <- pracma::zeros(k.coef*2 + 1, k.coef*2 + 1, n.curves)
+  # fourier.kovarianz <- matlab::zeros(k.coef*2 + 1, k.coef*2 + 1)
+  fourier.kovarianz <- pracma::zeros(k.coef*2 + 1, k.coef*2 + 1)
+  # fourier.std_all   <- matlab::zeros(n.time, n.time)
+  fourier.std_all   <- pracma::zeros(n.time, n.time)
+  # fourier.std       <- matlab::zeros(n.time, 1)
+  fourier.std       <- pracma::zeros(n.time, 1)
 
   # Set up a Fourier series
   # General: f(t) = mu + sum(alpha cos(2pi*k*t/T) + beta sin(2pi*k*t/T))
@@ -93,7 +102,7 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
 
   # Standard deviation of the Fourier curve
   for (i in 1:n.curves) {
-    # variance-covariance matrix
+    # Variance-covariance matrix
     fourier.std1[, , i] <- (fourier.koeffi[, i] - fourier.mean[, 1]) %*%
                            t(fourier.koeffi[, i] - fourier.mean[, 1])
   }
@@ -110,16 +119,26 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
   }
 
   # Bootstrap ------------------------------------------------------------------
-  bootstrap_sample        <- matlab::zeros(n.time, 4)
-  bootstrap.mean          <- matlab::zeros(k.coef*2 + 1, B)
-  bootstrap.real_mw       <- matlab::zeros(n.time, B)
-  bootstrap.zz            <- matlab::zeros(n.curves, B)
+  # bootstrap_sample        <- matlab::zeros(n.time, 4) # old version
+  bootstrap_sample        <- pracma::zeros(n.time, 4)
+  # bootstrap.mean          <- matlab::zeros(k.coef*2 + 1, B)
+  bootstrap.mean          <- pracma::zeros(k.coef*2 + 1, B)
+  # bootstrap.real_mw       <- matlab::zeros(n.time, B)
+  bootstrap.real_mw       <- pracma::zeros(n.time, B)
+  # bootstrap.zz            <- matlab::zeros(n.curves, B)
+  bootstrap.zz            <- pracma::zeros(n.curves, B)
   bootstrap.pseudo_koeffi <- matlab::zeros(k.coef*2 + 1, n.curves, B)
+  # bootstrap.pseudo_koeffi <- pracma::zeros(k.coef*2 + 1, n.curves, B)
   bootstrap.real          <- matlab::zeros(n.time, n.curves, B)
+  # bootstrap.real          <- pracma::zeros(n.time, n.curves, B)
   bootstrap.std1          <- matlab::zeros(k.coef*2 + 1, k.coef*2 + 1, n.curves)
+  # bootstrap.std1          <- pracma::zeros(k.coef*2 + 1, k.coef*2 + 1, n.curves)
   bootstrap.kovarianz     <- matlab::zeros(k.coef*2 + 1, k.coef*2 + 1, B)
+  # bootstrap.kovarianz     <- pracma::zeros(k.coef*2 + 1, k.coef*2 + 1, B)
   bootstrap.std_all       <- matlab::zeros(n.time, n.time, B)
-  bootstrap.std           <- matlab::zeros(n.time, B)
+  # bootstrap.std_all       <- pracma::zeros(n.time, n.time, B)
+  # bootstrap.std           <- matlab::zeros(n.time, B)
+  bootstrap.std           <- pracma::zeros(n.time, B)
 
   for (i in 1:B) {
     if (iid == FALSE) {
@@ -175,8 +194,10 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
   band.sd   <- rowMeans(bootstrap.std)
 
   if (type == "prediction") {
-    cp.data   <- matlab::zeros(n.curves, B)
-    cp.data_i <- matlab::zeros(n.curves, B)
+    # cp.data   <- matlab::zeros(n.curves, B) # old version
+    cp.data   <- pracma::zeros(n.curves, B)
+    # cp.data_i <- matlab::zeros(n.curves, B)
+    cp.data_i <- pracma::zeros(n.curves, B)
 
     cp.mean <- 0
     cp.bound <- cp.begin
@@ -199,7 +220,8 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
                        band.mean - cp.bound * band.sd
     )
   } else if (type == "confidence") {
-    cc.data <- matlab::zeros(n.curves, B)
+    # cc.data <- matlab::zeros(n.curves, B) # old version
+    cc.data <- pracma::zeros(n.curves, B)
 
     for (i in 1:B) {
       for (k in 1:n.curves) {
