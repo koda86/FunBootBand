@@ -33,6 +33,7 @@
 # todo:
 # - ggf. 'matlab' Funktionen und alle non-base packages rausnehmen (matlab)
 # ganz konkret: matlab::zeros durch pracma::zeros ersetzen ... bei 3 input-Argumenten schauen!
+# - alle verbliebenen tmp Variablen entfernen/ersetzen
 # - Funktion in C++ entwickeln
 # - Vignette schreiben
 # - Testen
