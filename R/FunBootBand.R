@@ -10,7 +10,7 @@
 #' @param data A data set consisting of n curves of length t. Needs to be a
 #' numerical matrix of dimensions [t, n], e.g., data[1:101, 1:50] represents 50
 #' curves of length 101 points.
-#' @param type Band type (c("confidence", "prediction", "tolerance")).
+#' @param type Band type (c("confidence", "prediction")).
 #' @param B Number of bootstrap iterations (e.g., B = 1000).
 #' @param iid Assume independent and identically distributed (iid) curves or not
 #' (iid = c(TRUE, FALSE)). Setting iid=TRUE runs an ordinary (naive) bootstrap.
@@ -31,8 +31,7 @@
 #'
 
 # todo:
-# - Toleranzbaender
-# - ggf. 'matlab' Funktionen und alle non-base packages rausnehmen (tidyverse, reshape2, matlab)
+# - ggf. 'matlab' Funktionen und alle non-base packages rausnehmen (matlab)
 # - Funktion in C++ entwickeln
 # - Vignette schreiben
 # - Testen
