@@ -27,16 +27,18 @@
 #' load("curvesample.RData")
 #' band.limits <- band(data = curves, type = "prediction", B = 1000, iid = TRUE)
 #' @export
-#' @import tidyverse, reshape2, matlab
+#' @import matlab
 #'
 
 # todo:
-# - BOOTrep implementieren
 # - Toleranzbaender
+# - ggf. 'matlab' Funktionen und alle non-base packages rausnehmen (tidyverse, reshape2, matlab)
+# - Funktion in C++ entwickeln
 # - Vignette schreiben
 # - Testen
 
 # The header line needs to consist of letters.
+# Technically requires stationary curves.
 
 invisible(get(load("~/FunBootBand/data/curvesample.RData")))
 
@@ -169,7 +171,7 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
     }
   }
 
-  # Construct prediction or confidence bands -----------------------------------
+  # Construct bands ------------------------------------------------------------
   band.mean <- rowMeans(bootstrap.real_mw)
   band.sd   <- rowMeans(bootstrap.std)
 
@@ -198,10 +200,12 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
                        band.mean - cp.bound * band.sd
     )
   } else if (type == "confidence") {
+    cc.data <- matlab::zeros(n.curves, B)
+
     for (i in 1:B) {
       for (k in 1:n.curves) {
-        # Lenhoff, Appendix A, Eq. (0.6)
-        cc.data[k, i] <- max(abs(fourier.real_mw[, k] - bootstrap.real_mw[, i])/
+        # Lenhoff, Appendix A, Eq. (0.8)
+        cc.data[k, i] <- max(abs(bootstrap.real_mw[, i] - fourier.real_mw) /
                                bootstrap.std[, i])
       }
     }
@@ -217,3 +221,4 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
 
   return(band.boot)
 }
+
