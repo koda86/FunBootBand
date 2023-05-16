@@ -27,7 +27,7 @@
 #' load("curvesample.RData")
 #' band.limits <- band(data = curves, type = "prediction", B = 1000, iid = TRUE)
 #' @export
-#' @import matlab pracma
+#' @import pracma
 #'
 
 # TODO:
@@ -196,10 +196,8 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
   band.sd   <- rowMeans(bootstrap.std)
 
   if (type == "prediction") {
-    # cp.data   <- matlab::zeros(n.curves, B) # old version
-    cp.data   <- pracma::zeros(n.curves, B)
-    # cp.data_i <- matlab::zeros(n.curves, B)
-    cp.data_i <- pracma::zeros(n.curves, B)
+    cp.data   <- array(data = 0, dim = c(n.curves, B))
+    cp.data_i <- array(data = 0, dim = c(n.curves, B))
 
     cp.mean <- 0
     cp.bound <- cp.begin
@@ -222,8 +220,7 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
                        band.mean - cp.bound * band.sd
     )
   } else if (type == "confidence") {
-    # cc.data <- matlab::zeros(n.curves, B) # old version
-    cc.data <- pracma::zeros(n.curves, B)
+    cc.data <- array(data = 0, dim = c(n.curves, B))
 
     for (i in 1:B) {
       for (k in 1:n.curves) {
