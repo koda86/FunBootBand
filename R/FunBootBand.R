@@ -45,6 +45,8 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   # Initial check if input arguments match the desired format
   if (class(type) != "character") {
     stop("'type' must be a variable of type 'character'.")
+  } else if (!(type %in% c("confidence", "prediction"))) {
+    stop("'type' must be either 'confidence' or 'prediction'.")
   }
   if (!is.numeric(alpha) || alpha <= 0 || alpha > 1) {
     stop("'alpha' must be a numeric value between 0 and 1.")
@@ -198,7 +200,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
       for (i in 1:B) {
         for (k in 1:n.curves) {
           # Lenhoff et al., Appendix A, Eq. (0.6)
-          cp.data[k, i] <- max(abs(fourier.real[, k] - bootstrap.real_mw[, i]) /
+          cp.data[k, i] <- max(abs(fourier.real[, k] - bootstrap.rea l_mw[, i]) /
                                  bootstrap.std[, i])
           cp.data_i[k, i] <- cp.data[k, i] < cp.bound
         }
