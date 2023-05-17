@@ -31,6 +31,8 @@
 #'
 
 # TODO:
+# - Remove all 'pracma' dependencies
+# - Remove as much dependencies from external packages as possible
 # - Funktion in C++ entwickeln
 # - Vignette schreiben
 # - Testen
