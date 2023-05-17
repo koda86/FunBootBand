@@ -100,7 +100,8 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
   for (i in 1:n.curves) {
     # Least squares Regression
-    fourier.koeffi[, i] = pracma::mldivide(fourier.s, data[, i])
+    # fourier.koeffi[, i] = pracma::mldivide(fourier.s, data[, i]) # old
+    fourier.koeffi[, i] = pinv(t(fourier.s) %*% fourier.s) %*% t(fourier.s) %*% data[, i]
     # Fourier curve
     fourier.real[, i] = fourier.s %*% fourier.koeffi[, i]
   }
