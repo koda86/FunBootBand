@@ -200,7 +200,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
       for (i in 1:B) {
         for (k in 1:n.curves) {
           # Lenhoff et al., Appendix A, Eq. (0.6)
-          cp.data[k, i] <- max(abs(fourier.real[, k] - bootstrap.rea l_mw[, i]) /
+          cp.data[k, i] <- max(abs(fourier.real[, k] - bootstrap.real_mw[, i]) /
                                  bootstrap.std[, i])
           cp.data_i[k, i] <- cp.data[k, i] < cp.bound
         }
