@@ -95,10 +95,42 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     fourier.s <- cbind(fourier.s, sin(2*pi*(k/2)*time / (n.time-1)))
   }
 
+  # Helper function to calculate the pseudoinverse matrix (Moore-Penrose)
+  pseudo_inverse <- function(A, tol = .Machine$double.eps^(2/3)) {
+    stopifnot(is.numeric(A) || is.complex(A), is.matrix(A))
+
+    # Compute SVD
+    svd_result <- svd(A)
+    U <- svd_result$u
+    S <- svd_result$d
+    V <- svd_result$v
+
+    # Adjust for complex matrices
+    if (is.complex(A)) {
+      U <- Conj(U)
+    }
+
+    # Calculate the pseudoinverse
+    threshold <- max(tol * S[1], 0)
+    non_zero_indices <- S > threshold
+
+    if (all(non_zero_indices)) {
+      inverse <- V %*% diag(1/S) %*% t(U)
+    } else if (any(non_zero_indices)) {
+      V_filtered <- V[, non_zero_indices, drop = FALSE]
+      S_filtered <- S[non_zero_indices]
+      U_filtered <- U[, non_zero_indices, drop = FALSE]
+      inverse <- V_filtered %*% diag(1/S_filtered) %*% t(U_filtered)
+    } else {
+      inverse <- matrix(0, nrow = ncol(A), ncol = nrow(A))
+    }
+    return(inverse)
+  }
+
   for (i in 1:n.curves) {
     # Least squares Regression
-    # fourier.koeffi[, i] = pracma::mldivide(fourier.s, data[, i]) # old
-    fourier.koeffi[, i] = pinv(t(fourier.s) %*% fourier.s) %*% t(fourier.s) %*% data[, i]
+    fourier.koeffi[, i] = pseudo_inverse(t(fourier.s) %*% fourier.s) %*%
+      t(fourier.s) %*% data[, i]
     # Fourier curve
     fourier.real[, i] = fourier.s %*% fourier.koeffi[, i]
   }
@@ -132,7 +164,8 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   bootstrap.zz            <- array(data = 0, dim = c(n.curves, B))
   bootstrap.pseudo_koeffi <- array(data = 0, dim = c(k.coef*2 + 1, n.curves, B))
   bootstrap.real          <- array(data = 0, dim = c(n.time, n.curves, B))
-  bootstrap.std1          <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1, n.curves))
+  bootstrap.std1          <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1,
+                                                     n.curves))
   bootstrap.cov     <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1, B))
   bootstrap.std_all       <- array(data = 0, dim = c(n.time, n.time, B))
   bootstrap.std           <- array(data = 0, dim = c(n.time, B))
