@@ -103,10 +103,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     U <- svd_result$u
     S <- svd_result$d
     V <- svd_result$v
-    # Adjust for complex matrices
-    if (is.complex(A)) {
-      U <- Conj(U)
-    }
+    if (is.complex(A)) {U <- Conj(U)} # Adjust for complex matrices
     # Calculate the pseudoinverse
     threshold <- max(tol * S[1], 0)
     non_zero_indices <- S > threshold
