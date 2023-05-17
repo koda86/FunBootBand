@@ -99,17 +99,14 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   pseudo_inverse <- function(A, tol = .Machine$double.eps^(2/3)) {
     stopifnot(is.numeric(A) || is.complex(A), is.matrix(A))
 
-    # Compute SVD
     svd_result <- svd(A)
     U <- svd_result$u
     S <- svd_result$d
     V <- svd_result$v
-
     # Adjust for complex matrices
     if (is.complex(A)) {
       U <- Conj(U)
     }
-
     # Calculate the pseudoinverse
     threshold <- max(tol * S[1], 0)
     non_zero_indices <- S > threshold
