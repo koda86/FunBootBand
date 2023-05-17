@@ -43,28 +43,18 @@ invisible(get(load("~/FunBootBand/data/curvesample.RData")))
 band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
   # Initial check if input arguments match the desired format
-
-  # Check if 'type' matches the desired format
   if (class(type) != "character") {
     stop("'type' must be a variable of type 'character'.")
   }
-
-  # Check if 'alpha' matches the desired format
   if (!is.numeric(alpha) || alpha <= 0 || alpha > 1) {
     stop("'alpha' must be a numeric value between 0 and 1.")
   }
-
-  # Check if 'iid' matches the desired format
   if (!is.logical(iid)) {
     stop("'iid' must be a logical value (TRUE or FALSE).")
   }
-
-  # Check if 'k.coef' matches the desired format
   if (!is.numeric(k.coef) || k.coef <= 0) {
     stop("'k.coef' must be a positive integer.")
   }
-
-  # Check if 'B' matches the desired format
   if (!is.numeric(B) || B <= 0) {
     stop("'B' must be a positive integer.")
   }
