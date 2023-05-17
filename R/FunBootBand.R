@@ -4,8 +4,8 @@
 #' IMPORTANT NOTE: Currently, the script is designed for balanced data sets.
 #' Unbalanced designs (unequal number of curves) may lead to errors!
 #'
-#' @usage band(data, k.coef = 50, B = 10, type = "prediction", cp.begin = 0,
-#' alpha = 0.05, iid = TRUE)
+#' @usage band(data, k.coef = 50, B = 10, type = "prediction", alpha = 0.05,
+# iid = TRUE)
 #'
 #' @param data A data set consisting of n curves of length t. Needs to be a
 #' numerical matrix of dimensions [t, n], e.g., data[1:101, 1:50] represents 50
@@ -31,8 +31,6 @@
 #'
 
 # TODO:
-# - Funktionsargumente abfragen (siehe getAnywhere(matlab::zeros))
-# - Verbliebene tmp Variablen entfernen/ersetzen
 # - Funktion in C++ entwickeln
 # - Vignette schreiben
 # - Testen
@@ -42,35 +40,40 @@
 
 invisible(get(load("~/FunBootBand/data/curvesample.RData")))
 
-band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
-                 alpha = 0.05, iid = TRUE) {
+band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
-  # tmp <- matlab::zeros
-  # getAnywhere(tmp)
-  #
-  # nargs <- length(dots <- list(...))
-  # dims <- as.integer(if (nargs == 1 && is.size_t(dots[[1]])) {
-  #   dots[[1]]
-  # } else {
-  #   unlist(dots)
-  # })
-  # if (length(dims) == 1) {
-  #   dims[2] <- dims[1]
-  # }
-  # if (!(length(dims) > 1)) {
-  #   stop("dimensions must be of length greater than 1")
-  # }
-  # else if (!(all(dims > 0))) {
-  #   stop("dimensions must be a positive quantity")
-  # }
-  # array(0, dims)
+  # Initial check if input arguments match the desired format
+
+  # Check if 'type' matches the desired format
+  if (class(type) != "character") {
+    stop("'type' must be a variable of type 'character'.")
+  }
+
+  # Check if 'alpha' matches the desired format
+  if (!is.numeric(alpha) || alpha <= 0 || alpha > 1) {
+    stop("'alpha' must be a numeric value between 0 and 1.")
+  }
+
+  # Check if 'iid' matches the desired format
+  if (!is.logical(iid)) {
+    stop("'iid' must be a logical value (TRUE or FALSE).")
+  }
+
+  # Check if 'k.coef' matches the desired format
+  if (!is.numeric(k.coef) || k.coef <= 0) {
+    stop("'k.coef' must be a positive integer.")
+  }
+
+  # Check if 'B' matches the desired format
+  if (!is.numeric(B) || B <= 0) {
+    stop("'B' must be a positive integer.")
+  }
 
   if(all(is.na(suppressWarnings(as.numeric(data[1, ]))))) { # If header exists
     header <- as.character(data[1, ])
     data <- data[-1, ]
     n.time <- dim(data)[1]
-    # Reduce object size
-    data <- matrix(as.numeric(data), nrow = n.time)
+    data <- matrix(as.numeric(data), nrow = n.time) # Reduce object size
   } else {
     n.time <- dim(data)[1]
     data <- matrix(as.numeric(data), nrow = n.time)
@@ -89,7 +92,7 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
   fourier.mean      <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
   fourier.real_mw   <- array(data = 0, c(n.time, 1))
   fourier.std1      <- array(data = 0, c(k.coef*2 + 1, k.coef*2 + 1, n.curves))
-  fourier.kovarianz <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
+  fourier.cov <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
   fourier.std_all   <- array(data = 0, c(n.time, n.time))
   fourier.std       <- array(data = 0, dim = c(n.time, 1))
 
@@ -119,9 +122,9 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
                            t(fourier.koeffi[, i] - fourier.mean[, 1])
   }
 
-  fourier.kovarianz <- apply(fourier.std1, c(1, 2), mean)
+  fourier.cov <- apply(fourier.std1, c(1, 2), mean)
   # Lenhoff, Appendix A, Eq. (0.5)
-  fourier.std_all <- suppressWarnings(sqrt(fourier.s %*% fourier.kovarianz %*%
+  fourier.std_all <- suppressWarnings(sqrt(fourier.s %*% fourier.cov %*%
                      t(fourier.s))
                      )
 
@@ -138,7 +141,7 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
   bootstrap.pseudo_koeffi <- array(data = 0, dim = c(k.coef*2 + 1, n.curves, B))
   bootstrap.real          <- array(data = 0, dim = c(n.time, n.curves, B))
   bootstrap.std1          <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1, n.curves))
-  bootstrap.kovarianz     <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1, B))
+  bootstrap.cov     <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1, B))
   bootstrap.std_all       <- array(data = 0, dim = c(n.time, n.time, B))
   bootstrap.std           <- array(data = 0, dim = c(n.time, B))
 
@@ -181,9 +184,9 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
                         t(bootstrap.pseudo_koeffi[, k, i] - bootstrap.mean[, i])
     }
 
-    bootstrap.kovarianz[, , i] <- apply(bootstrap.std1, c(1, 2), mean)
+    bootstrap.cov[, , i] <- apply(bootstrap.std1, c(1, 2), mean)
     bootstrap.std_all[, , i] <- suppressWarnings(sqrt(fourier.s %*%
-                                bootstrap.kovarianz[, , i] %*% t(fourier.s))
+                                bootstrap.cov[, , i] %*% t(fourier.s))
                                 )
 
     for (k in 1:n.time) {
@@ -200,7 +203,7 @@ band <- function(data, k.coef = 50, B = 400, type = "prediction", cp.begin = 0,
     cp.data_i <- array(data = 0, dim = c(n.curves, B))
 
     cp.mean <- 0
-    cp.bound <- cp.begin
+    cp.bound <- 0 # cp.begin
     while (cp.mean < (1-alpha)) {
       for (i in 1:B) {
         for (k in 1:n.curves) {
