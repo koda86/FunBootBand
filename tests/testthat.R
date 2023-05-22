@@ -8,5 +8,6 @@
 
 library(testthat)
 library(FunBootBand)
+# devtools::load_all()
 
 test_check("FunBootBand")
