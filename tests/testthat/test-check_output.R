@@ -1,4 +1,3 @@
-context("check-output")  # Call "test-check_output.R"
 library(testthat)
 library(FunBootBand)
 # devtools::load_all()
@@ -8,12 +7,37 @@ test_that("band() returns something", {
   tmp <- band(data,
               type = "prediction",
               alpha = 0.05,
-              iid = TRUE,
+              iid = FALSE,
+              k.coef = 50,
               B = 5)
   expect_type(tmp, "double")
 })
 
-# 2. Test the function behavior with invalid inputs
+# 2. Does the code return the expected value?
+data <- invisible(get(load("~/FunBootBand/data/curvesample.RData")))
+
+# iid case
+dat <- data[-1, ]
+
+test_that("band() returns something", {
+  tmp <- band(dat,
+              type = "prediction",
+              alpha = 0.05,
+              iid = TRUE,
+              k.coef = 50,
+              B = 5)
+  expect_type(tmp, "double")
+})
+
+# Assume iid when data is not iid or
+# ...
+
+# Check for NAs
+# Currently, NAs are not allowed.
+
+# Wrong data input format (iid)
+
+# 3. Test the function behavior with invalid inputs
 test_that("Invalid inputs throw appropriate errors", {
   # Invalid 'type' (a)
   expect_error(band(matrix(1:10), type = "invalid", alpha = 0.05, iid = TRUE, k.coef = 50, B = 5),
@@ -28,6 +52,9 @@ test_that("Invalid inputs throw appropriate errors", {
   expect_error(band(matrix(1:10), type = "confidence", alpha = "0.05", iid = TRUE, k.coef = 50, B = 5),
                "'alpha' must be a numeric value between 0 and 1.")
 })
+
+# 4. Data Structure Test
+# expect_length(): Checks the length of an object.
 
 # Equality Tests:
 #   expect_equal(): Checks if two objects are equal.
