@@ -34,8 +34,9 @@
 # - Data einlesbar als Matrix und DF
 # - Testen (testthat) ... test coverage (covr)
 # - Peer review, e.g. https://ropensci.org/software-review/
-# - Funktion in C++ entwickeln
+# - (Funktion in C++ entwickeln)
 # - Vignette schreiben
+# - Github Blog anlegen (siehe Demetri Pananos und https://github.com/skills/github-pages)
 
 # Two data formats are possible:
 # 1. Matrix with header: The header line needs to consist of letters.
