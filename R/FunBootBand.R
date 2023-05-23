@@ -30,11 +30,21 @@
 #'
 
 # TODO:
+# - Warum sind 'n.time' und 'time' unterschiedlich lang?
+# - Data einlesbar als Matrix und DF
+# - Testen (testthat) ... test coverage (covr)
+# - Peer review, e.g. https://ropensci.org/software-review/
 # - Funktion in C++ entwickeln
 # - Vignette schreiben
-# - Testen
 
-# The header line needs to consist of letters.
+# Two data formats are possible:
+# 1. Matrix with header: The header line needs to consist of letters.
+
+# If curves
+# are iid, all l
+
+# What about NAs?
+
 # Technically requires stationary curves.
 
 invisible(get(load("~/FunBootBand/data/curvesample.RData")))
@@ -60,22 +70,29 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     stop("'B' must be a positive integer.")
   }
 
-  if(all(is.na(suppressWarnings(as.numeric(data[1, ]))))) { # If header exists
+  header.exists <- all(is.na(suppressWarnings(as.numeric(data[1, ]))))
+
+  if (iid == FALSE && !header.exists) {
+    stop("If 'iid' is set to FALSE (indicating nested/hierarchical data), a
+         header line needs to be specified. The header line indicates curve
+         cluster structure using letters (see documentation).")
+  } else if (iid == FALSE && header.exists) {
     header <- as.character(data[1, ])
     data <- data[-1, ]
-    n.time <- dim(data)[1]
-    data <- matrix(as.numeric(data), nrow = n.time) # Reduce object size
-  } else {
-    n.time <- dim(data)[1]
-    data <- matrix(as.numeric(data), nrow = n.time)
-  }
-
-  time <- seq(0, (n.time-1))
-  n.curves  <- dim(data)[2]
-  if (iid == FALSE) {
+    n.curves  <- dim(data)[2]
     n.cluster <- length(unique(header))
     curves.per.cluster <- n.curves / n.cluster
+  } else if (iid == TRUE && header.exists) {
+    header <- as.character(data[1, ])
+    data <- data[-1, ]
+    n.curves  <- dim(data)[2]
+  } else {
+    n.curves  <- dim(data)[2]
   }
+
+  n.time <- dim(data)[1]
+  time <- seq(0, (n.time - 1))
+  data <- matrix(as.numeric(data), nrow = n.time) # To reduce object size
 
   # Approximate curves using Fourier functions ---------------------------------
   fourier.koeffi    <- array(data = 0, dim = c(k.coef*2 + 1, n.curves))
@@ -83,7 +100,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   fourier.mean      <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
   fourier.real_mw   <- array(data = 0, c(n.time, 1))
   fourier.std1      <- array(data = 0, c(k.coef*2 + 1, k.coef*2 + 1, n.curves))
-  fourier.cov <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
+  fourier.cov       <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
   fourier.std_all   <- array(data = 0, c(n.time, n.time))
   fourier.std       <- array(data = 0, dim = c(n.time, 1))
 
@@ -160,12 +177,13 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   bootstrap.real          <- array(data = 0, dim = c(n.time, n.curves, B))
   bootstrap.std1          <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1,
                                                      n.curves))
-  bootstrap.cov     <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1, B))
+  bootstrap.cov           <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1,
+                                                     B))
   bootstrap.std_all       <- array(data = 0, dim = c(n.time, n.time, B))
   bootstrap.std           <- array(data = 0, dim = c(n.time, B))
 
   for (i in 1:B) {
-    if (iid == FALSE) {
+    if (iid == FALSE) { # Two-stage (cluster) bootstrap
       for (k in 1:curves.per.cluster) {
         # STAGE 1: Sample curve clusters with replacement
         stage.1.idx <- sample(1:n.cluster, size = n.cluster, replace = TRUE)
@@ -185,7 +203,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
         bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
         bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
     }
-    } else {
+    } else { # 'Ordinary' (naive) bootstrap
       for (k in 1:n.curves) {
         bootstrap.zz[k, i] = sample(n.curves, size=1)
         bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
