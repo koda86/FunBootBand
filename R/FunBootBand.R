@@ -30,7 +30,6 @@
 #'
 
 # TODO:
-# - Warum sind 'n.time' und 'time' unterschiedlich lang?
 # - Data einlesbar als Matrix und DF
 # - Testen (testthat) ... test coverage (covr)
 # - Peer review, e.g. https://ropensci.org/software-review/
@@ -45,6 +44,8 @@
 # are iid, all l
 
 # What about NAs?
+
+# Curves of equal length (with a common number of points) are expected.
 
 # Technically requires stationary curves.
 
@@ -105,15 +106,16 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   fourier.std_all   <- array(data = 0, c(n.time, n.time))
   fourier.std       <- array(data = 0, dim = c(n.time, 1))
 
-  # Set up a Fourier series
+  # Construct Fourier series
   # General: f(t) = mu + sum(alpha cos(2pi*k*t/T) + beta sin(2pi*k*t/T))
   fourier.s = rep(1, times = n.time)
   for (k in seq(1, k.coef*2, 2)) {
     fourier.s <- cbind(fourier.s, cos(2*pi*(k/2)*time / (n.time-1)))
     fourier.s <- cbind(fourier.s, sin(2*pi*(k/2)*time / (n.time-1)))
+    # '-1' is substracted to match the equations in Lenhoff Appendix A ('T')
   }
 
-  # Helper function to calculate the pseudoinverse matrix (Moore-Penrose)
+  # Helper function to calculate the pseudoinverse (Moore-Penrose)
   pseudo_inverse <- function(A, tol = .Machine$double.eps^(2/3)) {
     stopifnot(is.numeric(A) || is.complex(A), is.matrix(A))
 
