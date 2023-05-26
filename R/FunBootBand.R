@@ -7,19 +7,20 @@
 #' @usage band(data, k.coef = 50, B = 10, type = "prediction", alpha = 0.05,
 # iid = TRUE)
 #'
-#' @param data A data set consisting of n curves of length t. Needs to be a
-#' numerical matrix of dimensions [t, n], e.g., data[1:101, 1:50] represents 50
-#' curves of length 101 points.
-#' @param type Band type (c("confidence", "prediction")).
+#' @param data A data frame of dimensions [t, n], where 'n' is the number of
+#' curves and 't' is the length of the curves. All curves need to be of equal
+#' length.
+#' @param type Type of the statistical band (c("confidence", "prediction")).
 #' @param B Number of bootstrap iterations (e.g., B = 1000).
-#' @param iid Assume independent and identically distributed (iid) curves or not
-#' (iid = c(TRUE, FALSE)). Setting iid=TRUE runs an ordinary (naive) bootstrap.
-#' When setting iid=FALSE, a two-stage bootstrap is run, where clusters
-#' (comprising all of their curves) are resampled with replacement in the
-#' initial stage, and one curve per cluster is sampled without replacement in
-#' the second stage. If iid is set to FALSE, curves are assumed to be nested in
-#' curve clusters. These curve clusters need to be indicated in an additional
-#' header line (see 'Format').
+#' @param iid Dependency of the curves (iid = c(TRUE, FALSE)). Setting iid=TRUE
+#' runs an ordinary (naive) bootstrap, where all curves are assumed to be
+#' independent. When setting iid=FALSE, a two-stage bootstrap is run, where
+#' curve clusters (comprising all of their curves) are resampled with
+#' replacement in the initial stage, and one curve per cluster is sampled
+#' without replacement in the second stage. If iid is set to FALSE, curves are
+#' assumed to be nested in curve clusters. The cluster structure needs to be
+#' specified in the colnames of the data frame using letters to indicate
+#' clusters (see 'Format').
 #' @param alpha Desired type I error probability.
 #'
 #' @return A data frame object that contains upper and lower band boundaries.
@@ -30,23 +31,13 @@
 #'
 
 # TODO:
-# - Data einlesbar als Matrix und DF
 # - Testen (testthat) ... test coverage (covr)
 # - Peer review, e.g. https://ropensci.org/software-review/
 # - (Funktion in C++ entwickeln)
 # - Vignette schreiben
 # - Github Blog anlegen (siehe Demetri Pananos und https://github.com/skills/github-pages)
 
-# Two data formats are possible:
-# 1. Matrix without header:
-# 1. Matrix with header: The header line needs to consist of letters.
-
-# If curves
-# are iid, all l
-
 # What about NAs?
-
-# Curves of equal length (with a common number of points) are expected.
 
 # Technically requires stationary curves.
 
