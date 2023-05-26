@@ -38,6 +38,7 @@
 # - Github Blog anlegen (siehe Demetri Pananos und https://github.com/skills/github-pages)
 
 # Two data formats are possible:
+# 1. Matrix without header:
 # 1. Matrix with header: The header line needs to consist of letters.
 
 # If curves
@@ -49,7 +50,7 @@
 
 # Technically requires stationary curves.
 
-invisible(get(load("~/FunBootBand/data/curvesample.RData")))
+load("~/FunBootBand/data/curvesample.RData")
 
 band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
@@ -72,29 +73,16 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     stop("'B' must be a positive integer.")
   }
 
-  header.exists <- all(is.na(suppressWarnings(as.numeric(data[1, ]))))
-
-  if (iid == FALSE && !header.exists) {
-    stop("If 'iid' is set to FALSE (indicating nested/hierarchical data), a
-         header line needs to be specified. The header line indicates curve
-         cluster structure using letters (see documentation).")
-  } else if (iid == FALSE && header.exists) {
-    header <- as.character(data[1, ])
-    data <- data[-1, ]
+  if (iid == FALSE) {
     n.curves  <- dim(data)[2]
-    n.cluster <- length(unique(header))
+    n.cluster <- length(unique(colnames(data)))
     curves.per.cluster <- n.curves / n.cluster
-  } else if (iid == TRUE && header.exists) {
-    header <- as.character(data[1, ])
-    data <- data[-1, ]
-    n.curves  <- dim(data)[2]
-  } else {
+  } else if (iid == TRUE) {
     n.curves  <- dim(data)[2]
   }
 
   n.time <- dim(data)[1]
   time <- seq(0, (n.time - 1))
-  data <- matrix(as.numeric(data), nrow = n.time) # To reduce object size
 
   # Approximate curves using Fourier functions ---------------------------------
   fourier.koeffi    <- array(data = 0, dim = c(k.coef*2 + 1, n.curves))
@@ -112,7 +100,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   for (k in seq(1, k.coef*2, 2)) {
     fourier.s <- cbind(fourier.s, cos(2*pi*(k/2)*time / (n.time-1)))
     fourier.s <- cbind(fourier.s, sin(2*pi*(k/2)*time / (n.time-1)))
-    # '-1' is substracted to match the equations in Lenhoff Appendix A ('T')
+    # '-1' to match the equations in Lenhoff Appendix A ('T')
   }
 
   # Helper function to calculate the pseudoinverse (Moore-Penrose)
