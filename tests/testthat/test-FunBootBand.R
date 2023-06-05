@@ -14,7 +14,7 @@ test_that("band() returns something", {
 })
 
 # 2. Does the code return the expected value?
-data <- invisible(get(load("~/FunBootBand/data/curvesample.RData")))
+load("~/FunBootBand/data/curvesample.RData")
 
 # iid case
 dat <- data[-1, ]
