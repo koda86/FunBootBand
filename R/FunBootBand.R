@@ -64,26 +64,27 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     stop("'B' must be a positive integer.")
   }
 
-  if (iid == FALSE) {
-    n.curves  <- dim(data)[2]
-    n.cluster <- length(unique(colnames(data)))
-    curves.per.cluster <- n.curves / n.cluster
-  } else if (iid == TRUE) {
-    n.curves  <- dim(data)[2]
-  }
-
+  n.curves  <- dim(data)[2]
   n.time <- dim(data)[1]
   time <- seq(0, (n.time - 1))
 
+  if (iid == FALSE) {
+    if (is.data.frame(data) == FALSE) {stop("Input data is not a data frame.")}
+    n.cluster <- length(unique(colnames(data)))
+    curves.per.cluster <- n.curves / n.cluster
+    if (n.cluster < 2 | n.cluster == ncol(data)) {stop("The header does not\n
+        indicate a nested structure even though 'iid' is set to 'FALSE'.")}
+  }
+
   # Approximate curves using Fourier functions ---------------------------------
-  fourier.koeffi    <- array(data = 0, dim = c(k.coef*2 + 1, n.curves))
-  fourier.real      <- array(data = 0, dim = c(n.time, n.curves))
-  fourier.mean      <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
-  fourier.real_mw   <- array(data = 0, c(n.time, 1))
-  fourier.std1      <- array(data = 0, c(k.coef*2 + 1, k.coef*2 + 1, n.curves))
-  fourier.cov       <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
-  fourier.std_all   <- array(data = 0, c(n.time, n.time))
-  fourier.std       <- array(data = 0, dim = c(n.time, 1))
+  fourier.koeffi  <- array(data = 0, dim = c(k.coef*2 + 1, n.curves))
+  fourier.real    <- array(data = 0, dim = c(n.time, n.curves))
+  fourier.mean    <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
+  fourier.real_mw <- array(data = 0, c(n.time, 1))
+  fourier.std1    <- array(data = 0, c(k.coef*2 + 1, k.coef*2 + 1, n.curves))
+  fourier.cov     <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1))
+  fourier.std_all <- array(data = 0, c(n.time, n.time))
+  fourier.std     <- array(data = 0, dim = c(n.time, 1))
 
   # Construct Fourier series
   # General: f(t) = mu + sum(alpha cos(2pi*k*t/T) + beta sin(2pi*k*t/T))
@@ -165,7 +166,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   bootstrap.std           <- array(data = 0, dim = c(n.time, B))
 
   for (i in 1:B) {
-    if (iid == FALSE) { # Two-stage (cluster) bootstrap
+    if (iid == FALSE) { # Run two-stage (cluster) bootstrap
       for (k in 1:curves.per.cluster) {
         # STAGE 1: Sample curve clusters with replacement
         stage.1.idx <- sample(1:n.cluster, size = n.cluster, replace = TRUE)
@@ -185,7 +186,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
         bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
         bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
     }
-    } else { # 'Ordinary' (naive) bootstrap
+    } else { # Run 'ordinary' (naive) bootstrap
       for (k in 1:n.curves) {
         bootstrap.zz[k, i] = sample(n.curves, size=1)
         bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
