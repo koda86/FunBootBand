@@ -54,7 +54,7 @@
 # TODO:
 # - Präambel korrigieren
 # - Testen (testthat) ... test coverage (covr)
-# - Checken ob Funktion einen Fehler auswirft wenn Kurven unterschiedlich lang sind
+# - Checken ob die Funktion Fehler auswirft wenn Kurven unterschiedlich lang sind
 # - Peer review, e.g. https://ropensci.org/software-review/
 # - (Funktion in C++ entwickeln)
 # - Vignette schreiben
