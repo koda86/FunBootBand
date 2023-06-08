@@ -49,7 +49,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   } else if (!(type %in% c("confidence", "prediction"))) {
     stop("'type' must be either 'confidence' or 'prediction'.")
   }
-  if (!is.numeric(alpha) || alpha <= 0 || alpha > 1) {
+  if (!is.numeric(alpha) || alpha <= 0 || alpha >= 1) {
     stop("'alpha' must be a numeric value between 0 and 1.")
   }
   if (!is.logical(iid)) {
