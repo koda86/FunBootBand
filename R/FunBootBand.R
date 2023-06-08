@@ -37,8 +37,6 @@
 # - Vignette schreiben
 # - Github Blog anlegen (siehe Demetri Pananos und https://github.com/skills/github-pages)
 
-# What about NAs?
-
 # Technically requires stationary curves.
 
 load("~/FunBootBand/data/curvesample.RData")
@@ -63,6 +61,10 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   if (!is.numeric(B) || B <= 0) {
     stop("'B' must be a positive integer.")
   }
+  if (any(is.na(data))) {
+    stop("Function stopped due to NA's in the input data.")
+  }
+
 
   n.curves  <- dim(data)[2]
   n.time <- dim(data)[1]
