@@ -1,6 +1,6 @@
 library(FunBootBand)
 
-# Test if the function runs without error (assuming valid inputs)
+# Does the function run without errors? (Assuming valid inputs)
 expect_no_error(band(data,
                      type = "prediction",
                      alpha = 0.05,
@@ -8,7 +8,7 @@ expect_no_error(band(data,
                      k.coef = 50,
                      B = 5))
 
-# Does the function output have a valid data type?
+# Does the function output have the specified data type?
 test_that("band() has a valid return type", {
   expect_type(object = band(data,
                             type = "prediction",
@@ -28,23 +28,26 @@ expect_length(object = band(data,
                             B = 5),
               n = 3*dim(data)[1]) # n = expected length
 
-# Test the function behavior with invalid inputs
+# Does the function behave correctly when inputs/arguments are valid?
 test_that("Invalid inputs throw appropriate errors", {
+  # If iid is set to 'FALSE', 'data' must be a data frame
+  expect_error(band(as.matrix(data), type = "prediction", alpha = 0.05, iid = FALSE, k.coef = 50, B = 5),
+               "Input data is not a data frame.")
   # Invalid 'type' (a)
-  expect_error(band(matrix(1:10), type = "invalid", alpha = 0.05, iid = TRUE, k.coef = 50, B = 5),
+  expect_error(band(data, type = "invalid", alpha = 0.05, iid = TRUE, k.coef = 50, B = 5),
                "must be either 'confidence' or 'prediction'.")
   # Invalid 'type' (b)
-  expect_error(band(matrix(1:10), type = 3, alpha = 0.05, iid = TRUE, k.coef = 50, B = 5),
+  expect_error(band(data, type = 3, alpha = 0.05, iid = TRUE, k.coef = 50, B = 5),
                "'type' must be a variable of type 'character'.")
   # Invalid 'alpha' (a)
-  expect_error(band(matrix(1:10), type = "confidence", alpha = 1.5, iid = TRUE, k.coef = 50, B = 5),
+  expect_error(band(data, type = "confidence", alpha = 1.5, iid = TRUE, k.coef = 50, B = 5),
                "'alpha' must be a numeric value between 0 and 1.")
   # Invalid 'alpha' (b)
-  expect_error(band(matrix(1:10), type = "confidence", alpha = "0.05", iid = TRUE, k.coef = 50, B = 5),
+  expect_error(band(data, type = "confidence", alpha = "0.05", iid = TRUE, k.coef = 50, B = 5),
                "'alpha' must be a numeric value between 0 and 1.")
 })
 
-# Test if the header is specified correctly
+# Is the header specified correctly?
 data.without.names <- data.frame(matrix(unlist(data), nrow = ncol(data)))
 test_that("Invalid header", {
   expect_error(band(data.without.names, type = "prediction", alpha = 0.05, iid = FALSE, k.coef = 50, B = 5),
@@ -52,7 +55,7 @@ test_that("Invalid header", {
         indicate a nested structure even though 'iid' is set to 'FALSE'.")
 })
 
-# Test handling of NA's
+# Are NA's handled correctly?
 data.na <- data
 data.na[1,1] <- NA
 expect_error(band(data.na,
@@ -88,10 +91,3 @@ expect_error(band(data.na,
 
 
 # Wrong data input format (iid)
-
-
-
-
-
-# 4. Data Structure Test
-
