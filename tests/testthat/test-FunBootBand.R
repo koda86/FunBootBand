@@ -26,7 +26,7 @@ expect_length(object = band(data,
                             iid = FALSE,
                             k.coef = 50,
                             B = 5),
-              n = 3*dim(data)[1]) # n = expected length
+              n = 3*dim(data)[1]) # n: expected length
 
 # Does the function behave correctly when inputs/arguments are valid?
 test_that("Invalid inputs throw appropriate errors", {
@@ -66,28 +66,3 @@ expect_error(band(data.na,
                      B = 5))
 
 # Further 'expectations': https://testthat.r-lib.org/reference/
-# expect_named() # Does code return a vector with (given) names?
-# expect_true() expect_false() Does code return TRUE or FALSE?
-
-
-# # Weiterer Test
-# load("~/FunBootBand/data/curvesample.RData")
-#
-# # iid case
-# dat <- data[-1, ]
-#
-# test_that("band() returns something", {
-#   tmp <- band(dat,
-#               type = "prediction",
-#               alpha = 0.05,
-#               iid = TRUE,
-#               k.coef = 50,
-#               B = 5)
-#   expect_type(tmp, "double")
-# })
-
-# Assume iid when data is not iid or
-# ...
-
-
-# Wrong data input format (iid)
