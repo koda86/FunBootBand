@@ -65,7 +65,6 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     stop("Function stopped due to NA's in the input data.")
   }
 
-
   n.curves  <- dim(data)[2]
   n.time <- dim(data)[1]
   time <- seq(0, (n.time - 1))
