@@ -1,17 +1,26 @@
 #' @title FunBootBand
 #'
-#' @description Creates Functional Bootstraped (statistical) Bands.
-#' IMPORTANT NOTE: Currently, the script is designed for balanced data sets.
-#' Unbalanced designs (unequal number of curves) may lead to errors!
+#' @author Daniel Koska
 #'
-#' @usage band(data, k.coef = 50, B = 10, type = "prediction", alpha = 0.05,
-# iid = TRUE)
+#' @description Creates Functional Bootstraped (statistical) Bands.
+#' The 'band' function rests on two basic ASSUMPTIONS:
+#'
+#' - Assumption 1 (A1): All curves are of equal length. If necessary, any interpolation must be
+#' performed externally.
+#'
+#' - Assumption 2 (A2): Curves originate from stationary processes.
+#'
+#' If these assumptions are not met, the function will return an error (A1) or
+#' result in potentially erroneous outputs (A2).
+#'
+#' @usage band(data, type, alpha, iid = TRUE, k.coef = 50,
+#' B = 400)
 #'
 #' @param data A data frame of dimensions [t, n], where 'n' is the number of
 #' curves and 't' is the length of the curves. All curves need to be of equal
 #' length.
 #' @param type Type of the statistical band (c("confidence", "prediction")).
-#' @param B Number of bootstrap iterations (e.g., B = 1000).
+#' @param alpha Desired type I error probability.
 #' @param iid Dependency of the curves (iid = c(TRUE, FALSE)). Setting iid=TRUE
 #' runs an ordinary (naive) bootstrap, where all curves are assumed to be
 #' independent. When setting iid=FALSE, a two-stage bootstrap is run, where
@@ -21,29 +30,39 @@
 #' assumed to be nested in curve clusters. The cluster structure needs to be
 #' specified in the colnames of the data frame using letters to indicate
 #' clusters (see 'Format').
-#' @param alpha Desired type I error probability.
+#' @param k.coef Number of Fourier coefficients (e.g., k = 50). Determines the
+#' smoothness of the curve approximation.
+#' @param B Number of bootstrap iterations (e.g., B = 1000). Default is 400.
 #'
-#' @return A data frame object that contains upper and lower band boundaries.
-#' @examples
-#' load("curvesample.RData")
-#' band.limits <- band(data = curves, type = "prediction", B = 1000, iid = TRUE)
+#' @importFrom stats quantile
+#'
 #' @export
 #'
+#' @return A data frame object that contains upper and lower band boundaries,
+#' alongside a mean curve.
+#'
+#' @examples
+#' library(FunBootBand)
+#' band.limits <- band(data, type = "prediction", alpha = 0.05, iid = TRUE, B = 50)
+#' plot(band.limits[1,], # upper band limit
+#'      xlim = c(0, 101),
+#'      ylim = range(band.limits),
+#'      type = "l")
+#' lines(band.limits[2, ]) # mean curve
+#' lines(band.limits[3, ]) # lower band limit
 
 # TODO:
+# - Präambel korrigieren
 # - Testen (testthat) ... test coverage (covr)
+# - Checken ob Funktion einen Fehler auswirft wenn Kurven unterschiedlich lang sind
 # - Peer review, e.g. https://ropensci.org/software-review/
 # - (Funktion in C++ entwickeln)
 # - Vignette schreiben
 # - Github Blog anlegen (siehe Demetri Pananos und https://github.com/skills/github-pages)
 
-# Technically requires stationary curves.
-
-load("~/FunBootBand/data/curvesample.RData")
-
 band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
-  # Initial check if input arguments match the desired format
+  # Check if function inputs match the desired format
   if (class(type) != "character") {
     stop("'type' must be a variable of type 'character'.")
   } else if (!(type %in% c("confidence", "prediction"))) {
