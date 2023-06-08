@@ -63,7 +63,7 @@
 band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
   # Check if function inputs match the desired format
-  if (class(type) != "character") {
+  if (!inherits(type, "character")) {
     stop("'type' must be a variable of type 'character'.")
   } else if (!(type %in% c("confidence", "prediction"))) {
     stop("'type' must be either 'confidence' or 'prediction'.")
