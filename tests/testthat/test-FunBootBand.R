@@ -1,14 +1,15 @@
 library(FunBootBand)
 
 # Does the function run without errors? (Assuming valid inputs)
-expect_no_error(band(data,
-                     type = "prediction",
-                     alpha = 0.05,
-                     iid = FALSE,
-                     k.coef = 50,
-                     B = 5))
+test_that("The function runs without errors (assuming valid inputs)", {
+  expect_no_error(band(data,
+                       type = "prediction",
+                       alpha = 0.05,
+                       iid = FALSE,
+                       k.coef = 50,
+                       B = 5))
+})
 
-# Does the function output have the specified data type?
 test_that("band() has a valid return type", {
   expect_type(object = band(data,
                             type = "prediction",
@@ -19,14 +20,16 @@ test_that("band() has a valid return type", {
               type = "double")
 })
 
-# Does the function output have the correct length?
-expect_length(object = band(data,
-                            type = "prediction",
-                            alpha = 0.05,
-                            iid = FALSE,
-                            k.coef = 50,
-                            B = 5),
-              n = 3*dim(data)[1]) # n: expected length
+test_that("The output has correct length", {
+  expect_length(object = band(data,
+                              type = "prediction",
+                              alpha = 0.05,
+                              iid = FALSE,
+                              k.coef = 50,
+                              B = 5),
+                n = 3*dim(data)[1]) # n: expected length
+})
+
 
 # Does the function behave correctly when inputs/arguments are valid?
 test_that("Invalid inputs throw appropriate errors", {
@@ -55,14 +58,13 @@ test_that("Invalid header", {
         indicate a nested structure even though 'iid' is set to 'FALSE'.")
 })
 
-# Are NA's handled correctly?
-data.na <- data
-data.na[1,1] <- NA
-expect_error(band(data.na,
-                     type = "prediction",
-                     alpha = 0.05,
-                     iid = FALSE,
-                     k.coef = 50,
-                     B = 5))
+# Are NA's handled correctly? (NA's are not allowed)
+test_that("No NA's allowed", {
+  expect_error(band(data[1,1] <- NA,
+                    type = "prediction",
+                    alpha = 0.05,
+                    iid = FALSE,
+                    k.coef = 50,
+                    B = 5))
+})
 
-# Further 'expectations': https://testthat.r-lib.org/reference/
