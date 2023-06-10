@@ -4,12 +4,10 @@ Title: Creates Functional Bootstraped (statistical) Bands
 Version: 0.1.0
 Author: Daniel Koska
 Maintainer: Daniel Koska <daniel.koska@hsw.tu-chemnitz.de>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: GPL-2 (LGPL)
+Description: Creates statistical bands using a functional approach.
+License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Data: data/curvesample.RData
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
