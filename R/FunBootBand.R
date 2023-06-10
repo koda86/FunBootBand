@@ -52,17 +52,15 @@
 #' lines(band.limits[3, ]) # lower band limit
 
 # TODO:
-# - Präambel korrigieren
-# - Testen (testthat) ... test coverage (covr)
+# - test coverage (covr) ... chapter 13 https://r-pkgs.org/testing-basics.html
 # - Checken ob die Funktion Fehler auswirft wenn Kurven unterschiedlich lang sind
 # - Peer review, e.g. https://ropensci.org/software-review/
-# - (Funktion in C++ entwickeln)
 # - Vignette schreiben
 # - Github Blog anlegen (siehe Demetri Pananos und https://github.com/skills/github-pages)
 
 band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
-  # Check if function inputs match the desired format
+  # Argument checking
   if (!inherits(type, "character")) {
     stop("'type' must be a variable of type 'character'.")
   } else if (!(type %in% c("confidence", "prediction"))) {
