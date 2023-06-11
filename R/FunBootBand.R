@@ -55,6 +55,7 @@
 # - test coverage (covr) ... chapter 13 https://r-pkgs.org/testing-basics.html
 # - Checken ob die Funktion Fehler auswirft wenn Kurven unterschiedlich lang sind
 # - Peer review, e.g. https://ropensci.org/software-review/
+# - README (RMD) schreiben
 # - Vignette schreiben
 # - Github Blog anlegen (siehe Demetri Pananos und https://github.com/skills/github-pages)
 
