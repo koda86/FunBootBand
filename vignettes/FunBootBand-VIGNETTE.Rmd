@@ -17,3 +17,5 @@ knitr::opts_chunk$set(
 ```{r setup}
 # library(FunBootBand)
 ```
+
+In many applications, data are available as time series or curve data.
