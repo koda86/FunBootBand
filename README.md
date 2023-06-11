@@ -6,12 +6,13 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of FunBootBand is to …
+Compute statistical bands from curve data using a function al approach
+and bootstrapping.
 
 ## Installation
 
 You can install the development version of FunBootBand from
-[GitHub](https://github.com/) with:
+[GitHub](https://github.com/koda86/FunBootBand) with:
 
 ``` r
 # install.packages("devtools")
