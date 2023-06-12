@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 Compute statistical bands from curve data using a functional approach and bootstrapping. 
 
-At the core, this is an implementation of the method developed by Sutherland et al. (1988) and Olshen et al. (1989), described in detail in Lenhoff et al. (1999). The method was originally written as a MATLAB program by Doris Oriwol and later translated into R and extended with an approach to handle hierarchical data (see also [https://github.com/koda86/floa](https://github.com/koda86/floa)).
+At its core, this is an implementation of the method developed by Sutherland et al. (1988) and Olshen et al. (1989), described in detail in Lenhoff et al. (1999). The method was originally written as a MATLAB program by Doris Oriwol and later translated into R and extended with an approach to handle hierarchical data (see also [https://github.com/koda86/floa](https://github.com/koda86/floa)).
 
 <!-- Bugfix bei der Berechnung -->
 
@@ -31,16 +31,10 @@ Koska, D., Oriwol, D., & Maiwald, C. (2023). Comparison of statistical models fo
 
 ## Citation
 
-IMHO, the following statement makes a great point:
+<!-- IMHO, the following statement makes a great point: -->
+<!-- <small> "Every great open source math library is built on the ashes of someone’s academic career" – https://njt-rse-unsw.netlify.app/#24 </small> -->
 
-"Every great open source math library is built on the ashes of someone’s academic career" – https://njt-rse-unsw.netlify.app/#24
-
-So, if you use the package, please consider citing the package via
-
-
-```{r citation, echo=TRUE, warning=FALSE}
-citation("FunBootBand")
-```
+Please cite the package via `citation("FunBootBand")`.
 
 ## Issues and contributing
 
@@ -57,19 +51,27 @@ devtools::install_github("koda86/FunBootBand")
 
 ## Example
 
-Here's how to use the 
-
-This is a basic example which shows you how to solve a common problem:
+Here's how to use the `band()` function with the built-in data set.
 
 ```{r example}
 library(FunBootBand)
 
-prediction.band <- band(data, type = "prediction", B = 5, alpha = 0.05, iid = TRUE)
+# In the example, `B` is set to only 5 to guarantee a fast calculation.
+# In reality, this value would be too low (package default: 400).
+prediction.band <- band(data,
+                        type = "prediction",
+                        B = 5,
+                        alpha = 0.05,
+                        iid = TRUE)
 
 # Function output:
 rownames(prediction.band)
 str(prediction.band)
+```
 
+You may, i.e., print the calculated limits alongside the original curves.
+
+```{r results='hide'}
 plot(data[, 1], type = "l", ylim = c(-3, 3), ylab = "Amplitude")
 apply(data, 2, function(x) lines(x))
 apply(prediction.band, 1, function(x) lines(x, col = "red", lwd = 4))

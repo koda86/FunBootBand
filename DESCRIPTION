@@ -3,9 +3,12 @@ Type: Package
 Title: Creates Functional Bootstraped (statistical) Bands
 Version: 0.1.0
 Date: 2023-06-12
+Year: 2023
 Author: Daniel Koska
 Maintainer: Daniel Koska <daniel.koska@hsw.tu-chemnitz.de>
-Description: Creates statistical bands using a functional approach
+Description: FunBootBand is an R package that allows users to create statistical bands. 
+    These bands can be used for various statistical applications and provide a functional approach to analyzing data.
+    The package offers functionality for generating bootstrap samples and calculating band statistics. FunBootBand is designed to be user-friendly and flexible, making it suitable for a wide range of data analysis tasks.
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true

@@ -9,7 +9,7 @@
 Compute statistical bands from curve data using a functional approach
 and bootstrapping.
 
-At the core, this is an implementation of the method developed by
+At its core, this is an implementation of the method developed by
 Sutherland et al. (1988) and Olshen et al. (1989), described in detail
 in Lenhoff et al. (1999). The method was originally written as a MATLAB
 program by Doris Oriwol and later translated into R and extended with an
@@ -27,32 +27,10 @@ biomechanical measurement systems. Journal of Biomechanics, J. Biomech.
 
 ## Citation
 
-IMHO, the following statement makes a great point:
+<!-- IMHO, the following statement makes a great point: -->
+<!-- <small> "Every great open source math library is built on the ashes of someone’s academic career" – https://njt-rse-unsw.netlify.app/#24 </small> -->
 
-“Every great open source math library is built on the ashes of someone’s
-academic career” – <https://njt-rse-unsw.netlify.app/#24>
-
-So, if you use the package, please consider citing the package via
-
-``` r
-citation("FunBootBand")
-#> To cite package 'FunBootBand' in publications use:
-#> 
-#>   Koska D (????). _FunBootBand: Creates Functional Bootstraped
-#>   (statistical) Bands_. R package version 0.1.0.
-#> 
-#> A BibTeX entry for LaTeX users is
-#> 
-#>   @Manual{,
-#>     title = {FunBootBand: Creates Functional Bootstraped (statistical) Bands},
-#>     author = {Daniel Koska},
-#>     note = {R package version 0.1.0},
-#>   }
-#> 
-#> ATTENTION: This citation information has been auto-generated from the
-#> package DESCRIPTION file and may need manual editing, see
-#> 'help("citation")'.
-```
+Please cite the package via `citation("FunBootBand")`.
 
 ## Issues and contributing
 
@@ -71,33 +49,39 @@ devtools::install_github("koda86/FunBootBand")
 
 ## Example
 
-Here’s how to use the
-
-This is a basic example which shows you how to solve a common problem:
+Here’s how to use the `band()` function with the built-in data set.
 
 ``` r
 library(FunBootBand)
 
-prediction.band <- band(data, type = "prediction", B = 5, alpha = 0.05, iid = TRUE)
+# In the example, `B` is set to only 5 to guarantee a fast calculation.
+# In reality, this value would be too low (package default: 400).
+prediction.band <- band(data,
+                        type = "prediction",
+                        B = 5,
+                        alpha = 0.05,
+                        iid = TRUE)
 
 # Function output:
 rownames(prediction.band)
 #> [1] "upper" "mean"  "lower"
 str(prediction.band)
-#>  num [1:3, 1:101] 0.781 0.135 -0.511 0.825 0.179 ...
+#>  num [1:3, 1:101] 0.797 0.178 -0.441 0.841 0.222 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : chr [1:3] "upper" "mean" "lower"
 #>   ..$ : NULL
+```
 
+You may, i.e., print the calculated limits alongside the original
+curves.
+
+``` r
 plot(data[, 1], type = "l", ylim = c(-3, 3), ylab = "Amplitude")
 apply(data, 2, function(x) lines(x))
-#> NULL
 apply(prediction.band, 1, function(x) lines(x, col = "red", lwd = 4))
 ```
 
-<img src="man/figures/README-example-1.png" width="100%" />
-
-    #> NULL
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
 
 <!-- What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so: -->
 <!-- ```{r cars} -->
