@@ -23,8 +23,6 @@ Compute statistical bands from curve data using a functional approach and bootst
 
 At its core, this is an implementation of the method developed by Sutherland et al. (1988) and Olshen et al. (1989), described in detail in Lenhoff et al. (1999). The method was originally written as a MATLAB program by Doris Oriwol and later translated into R and extended with an approach to handle hierarchical data (see also [https://github.com/koda86/floa](https://github.com/koda86/floa)).
 
-<!-- Bugfix bei der Berechnung -->
-
 More details can be found in this publication (and the vignette):
 
 Koska, D., Oriwol, D., & Maiwald, C. (2023). Comparison of statistical models for characterizing continuous differences between two biomechanical measurement systems. Journal of Biomechanics, J. Biomech. 149, https://doi.org/10.1016/j.jbiomech.2023.111506.

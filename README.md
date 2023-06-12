@@ -16,14 +16,12 @@ program by Doris Oriwol and later translated into R and extended with an
 approach to handle hierarchical data (see also
 <https://github.com/koda86/floa>).
 
-<!-- Bugfix bei der Berechnung -->
-
 More details can be found in this publication (and the vignette):
 
 Koska, D., Oriwol, D., & Maiwald, C. (2023). Comparison of statistical
 models for characterizing continuous differences between two
-biomechanical measurement systems. Journal of Biomechanics, J. Biomech.
-149, <https://doi.org/10.1016/j.jbiomech.2023.111506>.
+biomechanical measurement systems. Journal of Biomechanics 149,
+<https://doi.org/10.1016/j.jbiomech.2023.111506>.
 
 ## Citation
 
@@ -66,7 +64,7 @@ prediction.band <- band(data,
 rownames(prediction.band)
 #> [1] "upper" "mean"  "lower"
 str(prediction.band)
-#>  num [1:3, 1:101] 0.797 0.178 -0.441 0.841 0.222 ...
+#>  num [1:3, 1:101] 0.835 0.191 -0.452 0.879 0.235 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : chr [1:3] "upper" "mean" "lower"
 #>   ..$ : NULL
