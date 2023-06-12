@@ -20,27 +20,44 @@ approach to handle hierarchical data (see also
 
 More details can be found in this publication (and the vignette):
 
-Koska, D., oriwol, D., & Maiwald, C. (2023). Comparison of statistical
+Koska, D., Oriwol, D., & Maiwald, C. (2023). Comparison of statistical
 models for characterizing continuous differences between two
 biomechanical measurement systems. Journal of Biomechanics, J. Biomech.
 149, <https://doi.org/10.1016/j.jbiomech.2023.111506>.
 
 ## Citation
 
-You can quote the package …
+IMHO, the following statement makes a great point:
 
-## Issues
+“Every great open source math library is built on the ashes of someone’s
+academic career” – <https://njt-rse-unsw.netlify.app/#24>
 
-Please report software bugs or other problems by searching existing
-issues or creating a new issue here.
+So, if you use the package, please consider citing the package via
 
-## Contributing
+``` r
+citation("FunBootBand")
+#> To cite package 'FunBootBand' in publications use:
+#> 
+#>   Koska D (????). _FunBootBand: Creates Functional Bootstraped
+#>   (statistical) Bands_. R package version 0.1.0.
+#> 
+#> A BibTeX entry for LaTeX users is
+#> 
+#>   @Manual{,
+#>     title = {FunBootBand: Creates Functional Bootstraped (statistical) Bands},
+#>     author = {Daniel Koska},
+#>     note = {R package version 0.1.0},
+#>   }
+#> 
+#> ATTENTION: This citation information has been auto-generated from the
+#> package DESCRIPTION file and may need manual editing, see
+#> 'help("citation")'.
+```
 
-If you find issues or bugs feel free to send me an E-Mail
-(<daniel.koska@hsw.tu-chemnitz.de>). If you want to fix them yourself,
-please do, and submit a pull request so it can be reviewed and merged.
+## Issues and contributing
 
-## Licence
+In case you find a bug or run into other problems, please look for the
+“Issues” tab. Feedback of any kind is welcome.
 
 ## Installation
 
@@ -54,41 +71,50 @@ devtools::install_github("koda86/FunBootBand")
 
 ## Example
 
+Here’s how to use the
+
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(FunBootBand)
-## basic example code
+
+prediction.band <- band(data, type = "prediction", B = 5, alpha = 0.05, iid = TRUE)
+
+# Function output:
+rownames(prediction.band)
+#> [1] "upper" "mean"  "lower"
+str(prediction.band)
+#>  num [1:3, 1:101] 0.781 0.135 -0.511 0.825 0.179 ...
+#>  - attr(*, "dimnames")=List of 2
+#>   ..$ : chr [1:3] "upper" "mean" "lower"
+#>   ..$ : NULL
+
+plot(data[, 1], type = "l", ylim = c(-3, 3), ylab = "Amplitude")
+apply(data, 2, function(x) lines(x))
+#> NULL
+apply(prediction.band, 1, function(x) lines(x, col = "red", lwd = 4))
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+<img src="man/figures/README-example-1.png" width="100%" />
 
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
+    #> NULL
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/v1/examples>.
+<!-- What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so: -->
+<!-- ```{r cars} -->
+<!-- summary(cars) -->
+<!-- ``` -->
+<!-- You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>. -->
+<!-- You can also embed plots, for example: -->
+<!-- ```{r pressure, echo = FALSE} -->
+<!-- plot(pressure) -->
+<!-- ``` -->
+<!-- In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN. -->
 
-You can also embed plots, for example:
+## Licence
 
-<img src="man/figures/README-pressure-1.png" width="100%" />
+LGPL (\>= 3)
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
-
-### References
+## References
 
 -   Lenhoff, M.W., Santner, T.J., Otis, J.C., Peterson, M.G., Williams,
     B.J., Backus, S.I., 1999. Bootstrap prediction and confidence bands:
