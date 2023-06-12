@@ -2,9 +2,10 @@ Package: FunBootBand
 Type: Package
 Title: Creates Functional Bootstraped (statistical) Bands
 Version: 0.1.0
+Date: 2023-06-12
 Author: Daniel Koska
 Maintainer: Daniel Koska <daniel.koska@hsw.tu-chemnitz.de>
-Description: Creates statistical bands using a functional approach.
+Description: Creates statistical bands using a functional approach
 License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
