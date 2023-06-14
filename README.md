@@ -4,8 +4,9 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-Compute statistical bands from curve data using a functional approach
-and bootstrapping.
+The `FunBootBand` library contains one function `band()`, which
+generates statistical (prediction or confidence) bands from curve data
+using a functional approach and bootstrapping.
 
 At its core, this is an implementation of the method developed by
 Sutherland et al. (1988) and Olshen et al. (1989), described in detail
@@ -14,7 +15,7 @@ program by Doris Oriwol and later translated into R and extended with an
 approach to handle hierarchical data (see also
 <https://github.com/koda86/floa>).
 
-More details can be found in this publication (and the vignette):
+For more theoretical background, see this publication:
 
 Koska, D., Oriwol, D., & Maiwald, C. (2023). Comparison of statistical
 models for characterizing continuous differences between two
@@ -62,7 +63,7 @@ prediction.band <- band(data,
 rownames(prediction.band)
 #> [1] "upper" "mean"  "lower"
 str(prediction.band)
-#>  num [1:3, 1:101] 0.931 0.244 -0.444 0.975 0.287 ...
+#>  num [1:3, 1:101] 0.747 0.14 -0.467 0.791 0.184 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : chr [1:3] "upper" "mean" "lower"
 #>   ..$ : NULL
