@@ -4,15 +4,15 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The `FunBootBand` library contains one function `band()`, which
+The `FunBootBand` package contains one function `band()`, which
 generates statistical (prediction or confidence) bands from curve data
 using a functional approach and bootstrapping.
 
-At its core, this is an implementation of the method developed by
-Sutherland et al. (1988) and Olshen et al. (1989), described in detail
-in Lenhoff et al. (1999). The method was originally written as a MATLAB
-program by Doris Oriwol and later translated into R and extended with an
-approach to handle hierarchical data (see also
+At its core, this package is an implementation of the method developed
+by Sutherland et al. (1988) and Olshen et al. (1989), described in
+detail in Lenhoff et al. (1999). The method was originally written as a
+MATLAB program by Doris Oriwol and later translated into R and extended
+with an approach to handle hierarchical data (see also
 <https://github.com/koda86/floa>).
 
 For more theoretical background, see this publication:
@@ -63,7 +63,7 @@ prediction.band <- band(data,
 rownames(prediction.band)
 #> [1] "upper" "mean"  "lower"
 str(prediction.band)
-#>  num [1:3, 1:101] 0.747 0.14 -0.467 0.791 0.184 ...
+#>  num [1:3, 1:101] 0.746 0.132 -0.483 0.79 0.175 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : chr [1:3] "upper" "mean" "lower"
 #>   ..$ : NULL
