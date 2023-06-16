@@ -59,7 +59,7 @@ prediction.band <- band(data,
 rownames(prediction.band)
 #> [1] "upper" "mean"  "lower"
 str(prediction.band)
-#>  num [1:3, 1:101] 0.721 0.131 -0.459 0.764 0.175 ...
+#>  num [1:3, 1:101] 0.766 0.153 -0.461 0.81 0.196 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : chr [1:3] "upper" "mean" "lower"
 #>   ..$ : NULL
@@ -129,8 +129,8 @@ to 400.
 
 ## Issues and contributing
 
-In case you find a bug or run into other problems, please look for the
-“Issues” tab. Feedback of any kind is welcome.
+You can use the “Issues” tab in the Github repo or write me an E-Mail
+(<daniel.koska@hsw.tu-chemnitz.de>).
 
 ## Licence
 

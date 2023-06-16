@@ -97,7 +97,7 @@ The distribution of the curves and thus the band width is estimated using a boot
 
 ## Issues and contributing
 
-In case you find a bug or run into other problems, please look for the "Issues" tab. Feedback of any kind is welcome.
+You can use the "Issues" tab in the Github repo or write me an E-Mail (daniel.koska@hsw.tu-chemnitz.de).
 
 ## Licence
 
