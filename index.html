@@ -95,7 +95,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">prediction.band</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "upper" "mean"  "lower"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">prediction.band</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  num [1:3, 1:101] 0.849 0.188 -0.472 0.892 0.232 ...</span></span>
+<span><span class="co">#&gt;  num [1:3, 1:101] 0.721 0.131 -0.459 0.764 0.175 ...</span></span>
 <span><span class="co">#&gt;  - attr(*, "dimnames")=List of 2</span></span>
 <span><span class="co">#&gt;   ..$ : chr [1:3] "upper" "mean" "lower"</span></span>
 <span><span class="co">#&gt;   ..$ : NULL</span></span></code></pre></div>
@@ -138,14 +138,11 @@
 <code>B</code><a class="anchor" aria-label="anchor" href="#b"></a>
 </h4>
 <p>The distribution of the curves and thus the band width is estimated using a bootstrap procedure. Larger values typically provide better estimates, but will take longer to compute. The band width is likely to converge to a certain value. Therefore, different values of <code>B</code> may be tested to investigate the convergence behavior. By default, <code>B</code> is set to 400.</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
-</h2>
+<!-- ## Citation -->
 <!-- IMHO, the following statement makes a great point: -->
 <!-- <small> "Every great open source math library is built on the ashes of someone’s academic career" – https://njt-rse-unsw.netlify.app/#24 </small> -->
-<p>Please cite the package via <code>citation("FunBootBand")</code>.</p>
+<!-- Please cite the package via `citation("FunBootBand")`. -->
+</div>
 </div>
 <div class="section level2">
 <h2 id="issues-and-contributing">Issues and contributing<a class="anchor" aria-label="anchor" href="#issues-and-contributing"></a>
