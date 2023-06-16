@@ -59,7 +59,7 @@ prediction.band <- band(data,
 rownames(prediction.band)
 #> [1] "upper" "mean"  "lower"
 str(prediction.band)
-#>  num [1:3, 1:101] 0.849 0.188 -0.472 0.892 0.232 ...
+#>  num [1:3, 1:101] 0.721 0.131 -0.459 0.764 0.175 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : chr [1:3] "upper" "mean" "lower"
 #>   ..$ : NULL
@@ -122,12 +122,10 @@ converge to a certain value. Therefore, different values of `B` may be
 tested to investigate the convergence behavior. By default, `B` is set
 to 400.
 
-## Citation
-
+<!-- ## Citation -->
 <!-- IMHO, the following statement makes a great point: -->
 <!-- <small> "Every great open source math library is built on the ashes of someone’s academic career" – https://njt-rse-unsw.netlify.app/#24 </small> -->
-
-Please cite the package via `citation("FunBootBand")`.
+<!-- Please cite the package via `citation("FunBootBand")`. -->
 
 ## Issues and contributing
 

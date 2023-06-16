@@ -88,12 +88,12 @@ In the applied functional approach, curves are approximated using Fourier series
 
 The distribution of the curves and thus the band width is estimated using a bootstrap procedure. Larger values typically provide better estimates, but will take longer to compute. The band width is likely to converge to a certain value. Therefore, different values of `B` may be tested to investigate the convergence behavior. By default, `B` is set to 400.
 
-## Citation
+<!-- ## Citation -->
 
 <!-- IMHO, the following statement makes a great point: -->
 <!-- <small> "Every great open source math library is built on the ashes of someone’s academic career" – https://njt-rse-unsw.netlify.app/#24 </small> -->
 
-Please cite the package via `citation("FunBootBand")`.
+<!-- Please cite the package via `citation("FunBootBand")`. -->
 
 ## Issues and contributing
 
