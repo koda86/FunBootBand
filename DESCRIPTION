@@ -21,3 +21,4 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
+URL: https://koda86.github.io/FunBootBand/
