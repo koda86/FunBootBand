@@ -57,6 +57,7 @@
 # - Checken ob die Funktion Fehler auswirft wenn Kurven unterschiedlich lang sind
 # - Peer review, e.g. https://ropensci.org/software-review/
 # - Vignette schreiben
+# - C++ version
 
 band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
