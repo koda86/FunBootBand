@@ -51,16 +51,6 @@
 #' lines(band.limits[2, ]) # mean curve
 #' lines(band.limits[3, ]) # lower band limit
 
-# TODO:
-# - Preprint des JoB papers auf der Github Seite adden
-# - importFrom stats quantile ... diese dependency möglichst rausnehmen
-# - test coverage (covr) ... chapter 13 https://r-pkgs.org/testing-basics.html
-# - Checken ob die Funktion Fehler auswirft wenn Kurven unterschiedlich lang sind
-# - Formatierung colnames glattziehen (siehe E-Mail Janina)
-# - Peer review, e.g. https://ropensci.org/software-review/
-# - Vignette schreiben ... auf CRAN stellen
-# - C++ version (RCpp)
-
 band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
   # Argument checking
@@ -185,34 +175,33 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   bootstrap.zz            <- array(data = 0, dim = c(n.curves, B))
   bootstrap.pseudo_koeffi <- array(data = 0, dim = c(k.coef*2 + 1, n.curves, B))
   bootstrap.real          <- array(data = 0, dim = c(n.time, n.curves, B))
-  bootstrap.std1          <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1,
-                                                     n.curves))
-  bootstrap.cov           <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1,
-                                                     B))
+  bootstrap.std1          <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1, n.curves))
+  bootstrap.cov           <- array(data = 0, dim = c(k.coef*2 + 1, k.coef*2 + 1, B))
   bootstrap.std_all       <- array(data = 0, dim = c(n.time, n.time, B))
   bootstrap.std           <- array(data = 0, dim = c(n.time, B))
 
   for (i in 1:B) {
     if (iid == FALSE) { # Run two-stage (cluster) bootstrap
-      for (k in 1:curves.per.cluster) {
-        # STAGE 1: Sample curve clusters with replacement
+      for (k in 1:n.curves) { # STAGE 1: Sample curve clusters (including all curves) with replacement # Old version: curves.per.cluster
         stage.1.idx <- sample(1:n.cluster, size = n.cluster, replace = TRUE)
-        # STAGE 2: Sample within stage clusters without replacement
         curves <- c()
         for (curve.idx in stage.1.idx) {
           curve.numbers.stage.1 <- seq(from = curve.idx*curves.per.cluster -
-                                          curves.per.cluster + 1,
-                                        to = curve.idx*curves.per.cluster)
+                                         curves.per.cluster + 1,
+                                       to = curve.idx*curves.per.cluster)
           tmp <- sample(curve.numbers.stage.1, size = 1, replace = FALSE)
-          while (tmp %in% curves) { # Assure drawing without replacement
+          # Assure drawing without replacement
+          while (tmp %in% curves) {
             tmp <- sample(curve.numbers.stage.1, size = 1)
           }
           curves <- c(curves, tmp)
         }
-        bootstrap.zz[k, i] = curves[k]
-        bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
-        bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
-    }
+        for (clust.idx in 1:n.cluster) { # STAGE 2: Sample within stage clusters without replacement
+          bootstrap.zz[k, i] = curves[clust.idx] # Old version: curves[k] # Hier liegt der Hase im Pfeffer! Ab k=12 wirft es NA's
+          bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
+          bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+        }
+      }
     } else { # Run 'ordinary' (naive) bootstrap
       for (k in 1:n.curves) {
         bootstrap.zz[k, i] = sample(n.curves, size=1)
@@ -250,20 +239,18 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     cp.data_i <- array(data = 0, dim = c(n.curves, B))
 
     cp.mean <- 0
-    cp.bound <- 0 # cp.begin
+    cp.bound <- 0
     while (cp.mean < (1-alpha)) {
       for (i in 1:B) {
         for (k in 1:n.curves) {
           # Lenhoff et al., Appendix A, Eq. (0.6)
-          cp.data[k, i] <- max(abs(fourier.real[, k] - bootstrap.real_mw[, i]) /
-                                 bootstrap.std[, i])
+          cp.data[k, i] <- max(abs(fourier.real[, k] - bootstrap.real_mw[, i]) / bootstrap.std[, i])
           cp.data_i[k, i] <- cp.data[k, i] < cp.bound
         }
       }
       cp.mean <- mean(cp.data_i)
       cp.bound <- cp.bound + 0.05
     }
-    cp_out <- cp.bound
 
     band.boot <- rbind(band.mean + cp.bound * band.sd,
                        band.mean,
