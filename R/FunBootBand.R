@@ -52,12 +52,14 @@
 #' lines(band.limits[3, ]) # lower band limit
 
 # TODO:
-# - Preprit des JoB papers auf der Github Seite adden
+# - Preprint des JoB papers auf der Github Seite adden
+# - importFrom stats quantile ... diese dependency möglichst rausnehmen
 # - test coverage (covr) ... chapter 13 https://r-pkgs.org/testing-basics.html
 # - Checken ob die Funktion Fehler auswirft wenn Kurven unterschiedlich lang sind
+# - Formatierung colnames glattziehen (siehe E-Mail Janina)
 # - Peer review, e.g. https://ropensci.org/software-review/
-# - Vignette schreiben
-# - C++ version
+# - Vignette schreiben ... auf CRAN stellen
+# - C++ version (RCpp)
 
 band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
@@ -88,11 +90,17 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   time <- seq(0, (n.time - 1))
 
   if (iid == FALSE) {
+    # Check colnames to make sure the nested structure is correctly identified
+    if (colnames(data)[1] != colnames(data)[2]) {
+      stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.\n Make sure curves within the same cluster all have the exact same column label.")
+    }
+
     if (is.data.frame(data) == FALSE) {stop("Input data is not a data frame.")}
     n.cluster <- length(unique(colnames(data)))
     curves.per.cluster <- n.curves / n.cluster
-    if (n.cluster < 2 | n.cluster == ncol(data)) {stop("The header does not\n
-        indicate a nested structure even though 'iid' is set to 'FALSE'.")}
+    if (n.cluster < 2 | n.cluster == ncol(data)) {
+      stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.")
+      }
   }
 
   # Approximate curves using Fourier functions ---------------------------------
