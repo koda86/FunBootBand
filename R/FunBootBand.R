@@ -82,7 +82,11 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   if (iid == FALSE) {
     # Check colnames to make sure the nested structure is correctly identified
     if (colnames(data)[1] != colnames(data)[2]) {
-      stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.\n Make sure curves within the same cluster all have the exact same column label.")
+      new_colnames <- substr(colnames(data), 1, 1)
+      colnames(data) <- new_colnames
+      if (colnames(data)[1] != colnames(data)[2]) {
+        stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.\n Make sure curves within the same cluster all have the exact same column label.")
+      }
     }
 
     if (is.data.frame(data) == FALSE) {stop("Input data is not a data frame.")}
