@@ -54,8 +54,9 @@ test_that("Invalid inputs throw appropriate errors", {
 data.without.names <- data.frame(matrix(unlist(data), nrow = ncol(data)))
 test_that("Invalid header", {
   expect_error(band(data.without.names, type = "prediction", alpha = 0.05, iid = FALSE, k.coef = 50, B = 5),
-               "The header does not\n
-        indicate a nested structure even though 'iid' is set to 'FALSE'.")
+               "Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.")
+
+  expect_equal(colnames(data)[1], colnames(data)[2])
 })
 
 # Are NA's handled correctly? (NA's are not allowed)

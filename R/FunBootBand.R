@@ -34,8 +34,6 @@
 #' smoothness of the curve approximation.
 #' @param B Number of bootstrap iterations (e.g., B = 1000). Default is 400.
 #'
-#' @importFrom stats quantile
-#'
 #' @export
 #'
 #' @return A data frame object that contains upper and lower band boundaries,
@@ -75,21 +73,24 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     stop("Function stopped due to NA's in the input data.")
   }
 
+  if (is.data.frame(data) == FALSE) {stop("Input data is not a data frame.")}
+
   n.curves  <- dim(data)[2]
   n.time <- dim(data)[1]
   time <- seq(0, (n.time - 1))
 
-  if (iid == FALSE) {
+  if (iid != TRUE) {
     # Check colnames to make sure the nested structure is correctly identified
     if (colnames(data)[1] != colnames(data)[2]) {
       new_colnames <- substr(colnames(data), 1, 1)
       colnames(data) <- new_colnames
-      if (colnames(data)[1] != colnames(data)[2]) {
-        stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.\n Make sure curves within the same cluster all have the exact same column label.")
-      }
     }
 
-    if (is.data.frame(data) == FALSE) {stop("Input data is not a data frame.")}
+    if (colnames(data)[1] != colnames(data)[2]) {
+      stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.")
+      # \n Make sure curves within the same cluster all have the exact same column label.")
+    }
+
     n.cluster <- length(unique(colnames(data)))
     curves.per.cluster <- n.curves / n.cluster
     if (n.cluster < 2 | n.cluster == ncol(data)) {
@@ -283,3 +284,118 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   return(band.boot)
 }
 
+
+
+################################################################################
+# The functions quantile() and format_perc() (the latter is used in quantile())
+# are included at the end of this script. Otherwise, they would have to be im-
+# ported from the 'stats' package (via: @importFrom stats quantile)
+################################################################################
+
+quantile <- function (x, probs = seq(0, 1, 0.25), na.rm = FALSE, names = TRUE,
+                      type = 7, digits = 7, ...)
+{
+  if (is.factor(x)) {
+    if (is.ordered(x)) {
+      if (!any(type == c(1L, 3L)))
+        stop("'type' must be 1 or 3 for ordered factors")
+    }
+    else stop("(unordered) factors are not allowed")
+    lx <- levels(x)
+    x <- as.integer(x)
+  }
+  else {
+    if (is.null(x))
+      x <- numeric()
+    lx <- NULL
+  }
+  if (na.rm)
+    x <- x[!is.na(x)]
+  else if (anyNA(x))
+    stop("missing values and NaN's not allowed if 'na.rm' is FALSE")
+  eps <- 100 * .Machine$double.eps
+  if (any((p.ok <- !is.na(probs)) & (probs < -eps | probs >
+                                     1 + eps)))
+    stop("'probs' outside [0,1]")
+  n <- length(x)
+  probs <- pmax(0, pmin(1, probs))
+  np <- length(probs)
+  {
+    if (type == 7) {
+      index <- 1 + max(n - 1, 0) * probs
+      lo <- floor(index)
+      hi <- ceiling(index)
+      x <- sort(x, partial = if (n == 0)
+        numeric()
+        else unique(c(lo, hi)[p.ok]))
+      qs <- x[lo]
+      i <- which(!p.ok | (index > lo & x[hi] != qs))
+      h <- (index - lo)[i]
+      qs[i] <- (1 - h) * qs[i] + h * x[hi[i]]
+    }
+    else {
+      if (type <= 3) {
+        nppm <- if (type == 3)
+          n * probs - 0.5
+        else n * probs
+        j <- floor(nppm)
+        h <- switch(type, !p.ok | (nppm > j), ((nppm >
+                                                  j) + 1)/2, !p.ok | (nppm != j) | ((j%%2L) ==
+                                                                                      1L))
+      }
+      else {
+        switch(type - 3, {
+          a <- 0
+          b <- 1
+        }, a <- b <- 0.5, a <- b <- 0, a <- b <- 1, a <- b <- 1/3,
+        a <- b <- 3/8)
+        fuzz <- 4 * .Machine$double.eps
+        nppm <- a + probs * (n + 1 - a - b)
+        j <- floor(nppm + fuzz)
+        h <- nppm - j
+        if (any(sml <- abs(h) < fuzz, na.rm = TRUE))
+          h[sml] <- 0
+      }
+      x <- sort(x, partial = if (n == 0)
+        numeric()
+        else unique(c(1, j[p.ok & j > 0L & j <= n], (j +
+                                                       1)[p.ok & j > 0L & j < n], n)))
+      x <- c(x[1L], x[1L], x, x[n], x[n])
+      qs <- x[j + 2L]
+      qs[!is.na(h) & h == 1] <- x[j + 3L][!is.na(h) & h ==
+                                            1]
+      other <- (0 < h) & (h < 1) & (x[j + 2L] != x[j +
+                                                     3L])
+      other[is.na(other)] <- TRUE
+      if (any(other))
+        qs[other] <- ((1 - h) * x[j + 2L] + h * x[j +
+                                                    3L])[other]
+    }
+  }
+  qs[!p.ok] <- probs[!p.ok]
+  if (is.character(lx))
+    qs <- factor(qs, levels = seq_along(lx), labels = lx,
+                 ordered = TRUE)
+  if (names && np > 0L) {
+    stopifnot(is.numeric(digits), digits >= 1)
+    names(qs) <- format_perc(probs, digits = digits)
+  }
+  qs
+}
+
+
+
+format_perc <- function (x, digits = max(2L, getOption("digits")), probability = TRUE,
+                         use.fC = length(x) < 100, ...)
+{
+  if (length(x)) {
+    if (probability)
+      x <- 100 * x
+    ans <- paste0(if (use.fC)
+      formatC(x, format = "fg", width = 1, digits = digits)
+      else format(x, trim = TRUE, digits = digits, ...), "%")
+    ans[is.na(x)] <- ""
+    ans
+  }
+  else character(0)
+}
