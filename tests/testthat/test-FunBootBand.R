@@ -69,3 +69,34 @@ test_that("No NA's allowed", {
                     B = 5))
 })
 
+# # Are invalid inputs for the k.coef (number of Fourier coefficients) and B (number of bootstrap iterations) parameters handled correctly?
+# test_that("Invalid 'k.coef' and 'B' values throw appropriate errors", {
+#   # Invalid 'k.coef' (negative value)
+#   expect_error(band(data, type = "prediction", alpha = 0.05, iid = TRUE, k.coef = -1, B = 5),
+#                "'k.coef' must be a positive integer.")
+#
+#   # Invalid 'k.coef' (non-integer value)
+#   expect_error(band(data, type = "prediction", alpha = 0.05, iid = TRUE, k.coef = 50.5, B = 5),
+#                "'k.coef' must be a positive integer.")
+#
+#   # Invalid 'B' (negative value)
+#   expect_error(band(data, type = "prediction", alpha = 0.05, iid = TRUE, k.coef = 50, B = -100),
+#                "'B' must be a positive integer.")
+#
+#   # Invalid 'B' (non-integer value)
+#   expect_error(band(data, type = "prediction", alpha = 0.05, iid = TRUE, k.coef = 50, B = 100.5),
+#                "'B' must be a positive integer.")
+# })
+
+# Does the function handle non-numeric values in data properly?
+test_that("Function handles non-numeric data properly", {
+  # Add a non-numeric column
+  incorrect_data <- data
+  incorrect_data$non_numeric <- rep("a", nrow(data))
+
+  # Expect an error when non-numeric data is passed
+  expect_error(band(incorrect_data, type = "prediction", alpha = 0.05, iid = FALSE, k.coef = 50, B = 5),
+               "Non-numeric data found in input.")
+})
+
+# TODO: Does the function correctly handle input data with mismatched dimensions?

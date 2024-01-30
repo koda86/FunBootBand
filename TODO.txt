@@ -1,6 +1,5 @@
 TODO:
 - Weitere Tests entwickeln (.../FunBootBand/tests/testthat)
-- importFrom stats quantile ... diese dependency möglichst rausnehmen
 - Sinnvolle/bessere Benennung der Variable bootstrap.zz
 - test coverage (covr) ... chapter 13 https://r-pkgs.org/testing-basics.html
 - Checken ob die Funktion Fehler auswirft wenn Kurven unterschiedlich lang sind

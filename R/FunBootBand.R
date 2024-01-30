@@ -75,6 +75,11 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
   if (is.data.frame(data) == FALSE) {stop("Input data is not a data frame.")}
 
+  # Check if all data elements are numeric
+  if (!all(sapply(data, is.numeric))) {
+    stop("Non-numeric data found in input.")
+  }
+
   n.curves  <- dim(data)[2]
   n.time <- dim(data)[1]
   time <- seq(0, (n.time - 1))
