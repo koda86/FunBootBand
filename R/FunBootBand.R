@@ -87,6 +87,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   if (iid != TRUE) {
     # Check colnames to make sure the nested structure is correctly identified
     if (colnames(data)[1] != colnames(data)[2]) {
+      # This is necessary to make sure curves are not detected as iid
       new_colnames <- substr(colnames(data), 1, 1)
       colnames(data) <- new_colnames
     }
@@ -96,8 +97,48 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
       # \n Make sure curves within the same cluster all have the exact same column label.")
     }
 
-    n.cluster <- length(unique(colnames(data)))
-    curves.per.cluster <- n.curves / n.cluster
+    # --------------------------------------------------------------------------
+    # This implements a more robust approach that allows the detection of the
+    # number and size (aka number of curves per cluster) of cluster in the case
+    # where different clusters contain a different amount of curves per cluster.
+    # Function to determine the base name (or cluster identifier) of a column
+    # --------------------------------------------------------------------------
+    get_base_name <- function(name) {
+      # Split the name at any non-alphanumeric character (e.g., '.', '-')
+      parts <- strsplit(name, "[^[:alnum:]]")[[1]]
+      return(parts[1])
+    }
+
+    clusters <- list()
+    for (name in colnames(data)) {
+      base_name <- get_base_name(name)
+      # Check if the base name already exists in the clusters
+      if (!base_name %in% names(clusters)) {
+        # If not, create a new entry in clusters with this base name
+        clusters[[base_name]] <- 0
+      }
+      clusters[[base_name]] <- clusters[[base_name]] + 1
+    }
+
+    cluster_boundaries <- list()
+    start_idx <- 1
+    for (cluster_id in names(clusters)) {
+      end_idx <- start_idx + clusters[[cluster_id]] - 1
+      cluster_boundaries[[cluster_id]] <- c(start = start_idx, end = end_idx)
+      start_idx <- end_idx + 1
+    }
+
+    # Function to get the indices for a single cluster
+    get_cluster_indices <- function(cluster_id, cluster_boundaries) {
+      if (cluster_id %in% names(cluster_boundaries)) {
+        boundaries <- cluster_boundaries[[cluster_id]]
+        return(seq(from = boundaries["start"], to = boundaries["end"]))
+      } else {
+        stop("Cluster ID not found.")
+      }
+    }
+
+    n.cluster <- length(clusters)
     if (n.cluster < 2 | n.cluster == ncol(data)) {
       stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.")
       }
@@ -190,27 +231,38 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   bootstrap.std_all       <- array(data = 0, dim = c(n.time, n.time, B))
   bootstrap.std           <- array(data = 0, dim = c(n.time, B))
 
+  # Run two-stage (cluster) bootstrap ------------------------------------------
+  #
+  # Quote from the Journal of Biomechanics paper (Koska et al., 2023)
+  # [...] we implemented a second, modified version of the BOOT method, in
+  # which multiple curves per subject are accounted for (BOOTrep).
+  # Therefore, BOOTrep includes the two-stage bootstrap process described
+  # in Davison and Hinkley (1997), in which subjects (including all of
+  # their curves) are sampled with replacement in the first stage, and one
+  # curve per subject is drawn without replacement in the second
+  # stage.
+
   for (i in 1:B) {
-    # Run two-stage (cluster) bootstrap
     if (iid == FALSE) {
-      # STAGE 1: Sample curve clusters (including all curves) with replacement # Old version: curves.per.cluster
       for (k in 1:n.curves) {
+        # STAGE 1: Sample curve clusters (including all curves) with replacement
         stage.1.idx <- sample(1:n.cluster, size = n.cluster, replace = TRUE)
-        curves <- c()
+        curves.stage.2 <- c()
         for (curve.idx in stage.1.idx) {
-          curve.numbers.stage.1 <- seq(from = curve.idx*curves.per.cluster -
-                                         curves.per.cluster + 1,
-                                       to = curve.idx*curves.per.cluster)
-          tmp <- sample(curve.numbers.stage.1, size = 1, replace = FALSE)
-          # Assure drawing without replacement
-          while (tmp %in% curves) {
-            tmp <- sample(curve.numbers.stage.1, size = 1)
-          }
-          curves <- c(curves, tmp)
+          # Here, the indices of a single cluster (drawn with replacement) are selected
+          curve.idx.clustername <- names(cluster_boundaries)[curve.idx]
+          curve.numbers.stage.1 <- get_cluster_indices(curve.idx.clustername, cluster_boundaries)
+
+          # STAGE 2: Sample within stage clusters without replacement
+          sample.curve.index <- sample(curve.numbers.stage.1, size = 1, replace = FALSE)
+          # while (sample.curve.index %in% curves.stage.2) { # Assure drawing without replacement
+          #   sample.curve.index <- sample(curve.numbers.stage.1, size = 1)
+          # }
+          curves.stage.2 <- c(curves.stage.2, sample.curve.index)
         }
-        # STAGE 2: Sample within stage clusters without replacement
+
         for (clust.idx in 1:n.cluster) {
-          bootstrap.zz[k, i] = curves[clust.idx] # Old version: curves[k] # Hier liegt der Hase im Pfeffer! Ab k=12 wirft es NA's
+          bootstrap.zz[k, i] = curves.stage.2[clust.idx] # Old version: curves[k] # Hier liegt der Hase im Pfeffer! Ab k=12 wirft es NA's
           bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
           bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
         }
