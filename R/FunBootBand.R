@@ -191,8 +191,10 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   bootstrap.std           <- array(data = 0, dim = c(n.time, B))
 
   for (i in 1:B) {
-    if (iid == FALSE) { # Run two-stage (cluster) bootstrap
-      for (k in 1:n.curves) { # STAGE 1: Sample curve clusters (including all curves) with replacement # Old version: curves.per.cluster
+    # Run two-stage (cluster) bootstrap
+    if (iid == FALSE) {
+      # STAGE 1: Sample curve clusters (including all curves) with replacement # Old version: curves.per.cluster
+      for (k in 1:n.curves) {
         stage.1.idx <- sample(1:n.cluster, size = n.cluster, replace = TRUE)
         curves <- c()
         for (curve.idx in stage.1.idx) {
@@ -206,13 +208,15 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
           }
           curves <- c(curves, tmp)
         }
-        for (clust.idx in 1:n.cluster) { # STAGE 2: Sample within stage clusters without replacement
+        # STAGE 2: Sample within stage clusters without replacement
+        for (clust.idx in 1:n.cluster) {
           bootstrap.zz[k, i] = curves[clust.idx] # Old version: curves[k] # Hier liegt der Hase im Pfeffer! Ab k=12 wirft es NA's
           bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
           bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
         }
       }
-    } else { # Run 'ordinary' (naive) bootstrap
+    # If iid == TRUE: Run ordinary (naive) bootstrap
+    } else {
       for (k in 1:n.curves) {
         bootstrap.zz[k, i] = sample(n.curves, size=1)
         bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
