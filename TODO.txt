@@ -5,7 +5,8 @@ TODO:
 - Checken ob die Funktion Fehler auswirft wenn Kurven unterschiedlich lang sind
 - Formatierung colnames bei nested data glattziehen (siehe E-Mail Janina)
   - ... erste Variante bereits implementiert
-- Peer review, e.g. https://ropensci.org/software-review/
+  - ... sollte generell noch robuster gestaltet werden (weitere Varianten wie Spaltennamen benannt sein können)
+- Peer review, e.g. https://ropensci.org/software-review/ ... Dominik Liebl anleiern
 - Vignette schreiben ... auf CRAN stellen
 - C++ version (RCpp)
 - Preprint des JoB papers auf der Github Seite adden
