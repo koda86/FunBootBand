@@ -80,7 +80,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     stop("Non-numeric data found in input.")
   }
 
-  n.curves  <- dim(data)[2]
+  n.curves <- dim(data)[2]
   n.time <- dim(data)[1]
   time <- seq(0, (n.time - 1))
 
@@ -91,8 +91,8 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
   # have the exact same name (e.g., "A", "A"). If violated (e.g., "A.1", "A.2"),
   # the program assumes independent curves.
   if (iid == FALSE) {
-    
-    # # Old version (fall back in case of erroreous behavior)
+
+    # # Old version (fall back in case of erroneous behavior)
     # if (colnames(data)[1] != colnames(data)[2]) { # True if, e.g., colnames(data)[1]=="A" and colnames(data)[2]=="A.1"
     #   new.colnames <- substr(colnames(data), 1, 1)
     #   colnames(data) <- new.colnames
@@ -102,73 +102,36 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     # if (colnames(data)[1] != colnames(data)[2]) {
     #   stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.")
     # }
-    
+
     # Detect if a nested structure is given
     detect_nested_structure <- function(data) {
       col_names <- colnames(data)
-      
-      # Normalize column names: remove suffixes, whitespace, and normalize case
-      normalized_names <- tolower(trimws(sub("(_|-|\\.).*", "", col_names)))
-      
-      # Check if there are multiple columns in each group
-      all_clusters_nested <- all(table(normalized_names) > 1)
-      
-      # Return the boolean result
-      return(all_clusters_nested)
+
+      # Remove suffixes, whitespace, and normalize case
+      normalized.names <- tolower(trimws(sub("(_|-|\\.).*", "", col_names)))
+
+      # Group column indices by name
+      clusters <- split(seq_along(normalized.names), normalized.names)
+      nested.structure <- any(sapply(clusters, length) > 1)
+
+      # Check if each cluster has multiple members (indicating nested structure)
+      nested.structure <- all(sapply(clusters, length) > 1)
+
+      return(list(nested = nested.structure, clusters = clusters))
     }
-    
-    # Check if nested structure is specified
-    if (detect_nested_structure(data) == FALSE) {
+
+    nested.clusters <- detect_nested_structure(data)
+
+    if (nested.clusters$nested == FALSE) {
       stop("Your header does not indicate a nested structure even though 'iid' is set to 'FALSE'. Please make sure curves from the same cluster/instance/subject can be recognized as such and be distinguished from curves of a different cluster.")
     }
-    
+
     # Additional check: Look for empty or NA column names
     if (any(is.na(colnames(data)) | colnames(data) == "")) {
       stop("Column names cannot contain missing or empty values.")
     }
-    
-    # --------------------------------------------------------------------------
-    # This implements a more robust approach that allows the detection of the
-    # number and size (aka number of curves per cluster) of cluster in the case
-    # where different clusters contain a different amount of curves per cluster.
-    # Function to determine the base name (or cluster identifier) of a column
-    # --------------------------------------------------------------------------
-    get_base_name <- function(name) {
-      # Split the name at any non-alphanumeric character (e.g., '.', '-')
-      parts <- strsplit(name, "[^[:alnum:]]")[[1]]
-      return(parts[1])
-    }
 
-    clusters <- list()
-    for (name in colnames(data)) {
-      base_name <- get_base_name(name)
-      # Check if the base name already exists in the clusters
-      if (!base_name %in% names(clusters)) {
-        # If not, create a new entry in clusters with this base name
-        clusters[[base_name]] <- 0
-      }
-      clusters[[base_name]] <- clusters[[base_name]] + 1
-    }
-
-    cluster_boundaries <- list()
-    start_idx <- 1
-    for (cluster_id in names(clusters)) {
-      end_idx <- start_idx + clusters[[cluster_id]] - 1
-      cluster_boundaries[[cluster_id]] <- c(start = start_idx, end = end_idx)
-      start_idx <- end_idx + 1
-    }
-
-    # Function to get the indices for a single cluster
-    get_cluster_indices <- function(cluster_id, cluster_boundaries) {
-      if (cluster_id %in% names(cluster_boundaries)) {
-        boundaries <- cluster_boundaries[[cluster_id]]
-        return(seq(from = boundaries["start"], to = boundaries["end"]))
-      } else {
-        stop("Cluster ID not found.")
-      }
-    }
-
-    n.cluster <- length(clusters)
+    n.cluster <- length(nested.clusters$clusters)
     if (n.cluster < 2 | n.cluster == ncol(data)) {
       stop("Header does not indicate a nested structure even though 'iid' is set to 'FALSE'.")
       }
@@ -280,19 +243,17 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
         curves.stage.2 <- c()
         for (curve.idx in stage.1.idx) {
           # Here, the indices of a single cluster (drawn with replacement) are selected
-          curve.idx.clustername <- names(cluster_boundaries)[curve.idx]
-          curve.numbers.stage.1 <- get_cluster_indices(curve.idx.clustername, cluster_boundaries)
+          curve.idx.clustername <- names(nested.clusters$clusters)[curve.idx]
+          curve.numbers.stage.1 <- nested.clusters$clusters[curve.idx.clustername]
 
           # STAGE 2: Sample within stage clusters without replacement
-          sample.curve.index <- sample(curve.numbers.stage.1, size = 1, replace = FALSE)
-          # while (sample.curve.index %in% curves.stage.2) { # Assure drawing without replacement
-          #   sample.curve.index <- sample(curve.numbers.stage.1, size = 1)
-          # }
+          sample.curve.index <- unname(sample(unlist(curve.numbers.stage.1), size = 1, replace = FALSE)) # Intermediate step to extract numeric values from list
           curves.stage.2 <- c(curves.stage.2, sample.curve.index)
         }
 
         for (clust.idx in 1:n.cluster) {
-          bootstrap.zz[k, i] = curves.stage.2[clust.idx] # Old version: curves[k] # Hier liegt der Hase im Pfeffer! Ab k=12 wirft es NA's
+          curves.stage.2.idx <- unname(unlist(curves.stage.2[clust.idx])) # Intermediate step to extract numeric values from list
+          bootstrap.zz[k, i] = curves.stage.2.idx
           bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
           bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
         }
