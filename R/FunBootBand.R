@@ -237,35 +237,79 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
 
   for (i in 1:B) {
     if (iid == FALSE) {
-      for (k in 1:n.curves) {
-        # STAGE 1: Sample curve clusters (including all curves) with replacement
-        stage.1.idx <- sample(1:n.cluster, size = n.cluster, replace = TRUE)
-        curves.stage.2 <- c()
-        for (curve.idx in stage.1.idx) {
-          # Here, the indices of a single cluster (drawn with replacement) are selected
-          curve.idx.clustername <- names(nested.clusters$clusters)[curve.idx]
-          curve.numbers.stage.1 <- nested.clusters$clusters[curve.idx.clustername]
+      # --- Build the index vector ONCE per replicate i ---------------------------
+      # Stage 1: sample clusters (subjects) with replacement
+      stage.1.idx <- sample(seq_len(n.cluster), size = n.curves, replace = TRUE)
 
-          # STAGE 2: Sample within stage clusters without replacement
-          sample.curve.index <- unname(sample(unlist(curve.numbers.stage.1), size = 1, replace = FALSE)) # Intermediate step to extract numeric values from list
-          curves.stage.2 <- c(curves.stage.2, sample.curve.index)
-        }
+      # Stage 2: within each selected cluster, pick 1 curve (w/o replacement if possible)
+      curves.stage.2 <- integer(n.curves)  # will hold column indices for this replicate
 
-        for (clust.idx in 1:n.cluster) {
-          curves.stage.2.idx <- unname(unlist(curves.stage.2[clust.idx])) # Intermediate step to extract numeric values from list
-          bootstrap.zz[k, i] = curves.stage.2.idx
-          bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
-          bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+      # Make a quick lookup: cluster name -> integer vector of column indices
+      cluster_indices <- lapply(nested.clusters$clusters, function(x) unname(as.integer(unlist(x))))
+
+      for (cl in seq_len(n.cluster)) {
+        pos <- which(stage.1.idx == cl)            # positions in curves.stage.2 that need cluster cl
+        m   <- length(pos)
+        if (m > 0) {
+          pool <- cluster_indices[[cl]]
+          # sample without replacement up to pool size, then with replacement if m > length(pool)
+          picks <- if (m <= length(pool)) {
+            sample(pool, m, replace = FALSE)
+          } else {
+            c(sample(pool, length(pool), replace = FALSE),
+              sample(pool, m - length(pool), replace = TRUE))
+          }
+          curves.stage.2[pos] <- picks
         }
       }
-    # If iid == TRUE: Run ordinary (naive) bootstrap
-    } else {
+
+      # --- Use your existing inner loop, now fed by the prebuilt index -----------
       for (k in 1:n.curves) {
-        bootstrap.zz[k, i] = sample(n.curves, size=1)
-        bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
-        bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+        bootstrap.zz[k, i] <- curves.stage.2[k]
+        bootstrap.pseudo_koeffi[, k, i] <- fourier.koeffi[, bootstrap.zz[k, i]]
+        bootstrap.real[, k, i] <- fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+      }
+
+    } else {
+      # iid == TRUE: unchanged naive bootstrap
+      for (k in 1:n.curves) {
+        bootstrap.zz[k, i] <- sample(n.curves, size = 1)
+        bootstrap.pseudo_koeffi[, k, i] <- fourier.koeffi[, bootstrap.zz[k, i]]
+        bootstrap.real[, k, i] <- fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
       }
     }
+
+    # Old version
+    # if (iid == FALSE) {
+    #   for (k in 1:n.curves) {
+    #     # STAGE 1: Sample curve clusters (including all curves) with replacement
+    #     stage.1.idx <- sample(1:n.cluster, size = n.cluster, replace = TRUE)
+    #     curves.stage.2 <- c()
+    #     for (curve.idx in stage.1.idx) {
+    #       # Here, the indices of a single cluster (drawn with replacement) are selected
+    #       curve.idx.clustername <- names(nested.clusters$clusters)[curve.idx]
+    #       curve.numbers.stage.1 <- nested.clusters$clusters[curve.idx.clustername]
+    #
+    #       # STAGE 2: Sample within stage clusters without replacement
+    #       sample.curve.index <- unname(sample(unlist(curve.numbers.stage.1), size = 1, replace = FALSE)) # Intermediate step to extract numeric values from list
+    #       curves.stage.2 <- c(curves.stage.2, sample.curve.index)
+    #     }
+    #
+    #     for (clust.idx in 1:n.cluster) {
+    #       curves.stage.2.idx <- unname(unlist(curves.stage.2[clust.idx])) # Intermediate step to extract numeric values from list
+    #       bootstrap.zz[k, i] = curves.stage.2.idx
+    #       bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
+    #       bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+    #     }
+    #   }
+    # # If iid == TRUE: Run ordinary (naive) bootstrap
+    # } else {
+    #   for (k in 1:n.curves) {
+    #     bootstrap.zz[k, i] = sample(n.curves, size=1)
+    #     bootstrap.pseudo_koeffi[, k, i] = fourier.koeffi[, bootstrap.zz[k, i]]
+    #     bootstrap.real[, k, i] = fourier.s %*% bootstrap.pseudo_koeffi[, k, i]
+    #   }
+    # }
 
     # Mean bootstrap curve and standard deviation
     bootstrap.mean[, i] <- rowMeans(bootstrap.pseudo_koeffi[, , i])
