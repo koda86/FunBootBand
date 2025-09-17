@@ -115,7 +115,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
       nested.structure <- any(sapply(clusters, length) > 1)
 
       # Check if each cluster has multiple members (indicating nested structure)
-      nested.structure <- all(sapply(clusters, length) > 1)
+      nested.structure <- any(sapply(clusters, length) > 1)
 
       return(list(nested = nested.structure, clusters = clusters))
     }
@@ -268,7 +268,7 @@ band <- function(data, type, alpha, iid = TRUE, k.coef = 50, B = 400) {
     }
 
     # Mean bootstrap curve and standard deviation
-    bootstrap.mean[, i] <- rowMeans(bootstrap.pseudo_koeffi[, , 1])
+    bootstrap.mean[, i] <- rowMeans(bootstrap.pseudo_koeffi[, , i])
     bootstrap.real_mw[, i] <- fourier.s %*% bootstrap.mean[, i]
 
     for (k in 1:n.curves) {
